@@ -4,6 +4,8 @@
       :columns ="columns"
       :dataSource ="desserts"
       :isLoading ="true"
+      :isLoaderSoft ="true"
+      :isLoaderHard ="false"
       @rowClick="indexRow"
     >
       <template #header-name-content="{header}" >
@@ -14,7 +16,7 @@
         {{ bodyCell * 2 }}
       </template> -->
 
-      <!-- <template #loader>
+      <!-- <template #loader-soft>
         <img src="./assets/img/loader2.gif" alt="">
       </template> -->
 

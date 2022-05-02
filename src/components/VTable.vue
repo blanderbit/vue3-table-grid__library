@@ -1,23 +1,35 @@
 <template>
   <div class="vt-container">
     <div v-if="isLoading" class="loader-block">
-      <div v-if="isLoader" class="loader">
-        <slot name="loader"> <!-- Slot which shows loader -->
-          <img src="../assets/img/loader.gif" alt="">
-        </slot>
+
+      <div v-if="isLoaderSoft" >
+        <div v-if="isLoader" class="loader-soft">
+          <slot name="loader-soft"> <!-- Slot which shows loader -->
+            <img src="../assets/img/loader.gif" alt="">
+          </slot>
+        </div>
       </div>
+
+      <div v-if="isLoaderHard">
+        <div v-if="isLoader" class="loader-hard">
+          <slot name="loader-hard"> <!-- Slot which shows loader -->
+            <img src="../assets/img/loader3.gif" alt="">
+          </slot>
+        </div>
+      </div>
+
     </div>
-    <table v-if="dataSource.length && columns.length">
+    <table v-if="isTableVisible">
       <thead> <!-- Header block -->
         <tr>
           <th
-            v-for="(header, idx) in settings.headers"
+            v-for="(header, idx) in mainColumns"
             :key="idx"
-            :class="header._otoptions.class"
-            :style="header._otoptions.style"
+            :class="header._options.class"
+            :style="header._options.style"
           >
             <slot
-              :name="header._otoptions.slotName"
+              :name="header._options.slotName"
               :header="header"
             > <!-- Slot for transmiting users data to header's cell -->
               <span>
@@ -27,23 +39,23 @@
           </th>
         </tr>
       </thead>
-      <tbody> <!-- Main body block -->
+      <tbody v-if="isMainBodyOfTableVisible"> <!-- Main body block -->
         <tr
-          v-for="(element, idxLine) in settings.mainBodyItems"
-          :key="idxLine"
-          @click="$emit('rowClick', element)"
+          v-for="(row, rowIndex) in rows"
+          :key="rowIndex"
+          @click="$emit('rowClick', row)"
         > <!-- rowClick function emits index of the row on the top -->
           <td
-            v-for="(header, idx) in settings.headers"
+            v-for="(header, idx) in mainColumns"
             :key="idx"
-            :style="header._otoptions.style"
+            :style="header._options.style"
           >
             <slot
-              :name="`line-${idxLine}_cell-${idx}`"
-              :bodyCell="element[header.displayValue]"
+              :name="`line-${rowIndex}_cell-${idx}`"
+              :bodyCell="row[header.displayValue]"
             >
               <span> <!-- Slot for transmiting users data to main body table cell -->
-                {{ element[header.displayValue] }}
+                {{ row[header.displayValue] }}
               </span>
             </slot>
           </td>
@@ -72,43 +84,67 @@ export default {
       type: Array,
       default: () => []
     },
-    isLoading: { // This prop switch off or switch on loader, Boolean property is expected
+    isLoading: { // This prop switch off/on loader
       type: Boolean,
       default: true
+    },
+    isLoaderSoft: { // This prop switch off/on soft loader
+      type: Boolean,
+      default: true
+    },
+    isLoaderHard: { // This prop switch off/on hard loader
+      type: Boolean,
+      default: false
     }
   },
   setup (props) {
     /* eslint-disable */
-    const settings = computed(() => {
-      return {
-        headers: props.columns
-                  .filter((header) => header.displayValue && header.displayName)
-                  .map((item, idx, array) => {
-                    return {
-                      ...item,
-                      _otoptions: {
-                        // creates class name for header table cell
-                        class: `col_name-${item.displayValue}`,
-                        // creates right line of the table, except for the last column
-                        style: idx !== array.length - 1 ? 'border-right: 1px solid #EEF1F2' : '',
-                        //creates name for slot
-                        slotName: `header-${item.displayValue}-content`
-                      }
-                    }
-                  }),
-        mainBodyItems: props.dataSource
-      }
+    const mainColumns = computed(() => {
+      return props.columns
+            .filter((header) => header.displayValue && header.displayName)
+            .map((item, idx, array) => {
+              return {
+                ...item,
+                _options: {
+                  // creates class name for header table cell
+                  class: `col_name-${item.displayValue}`,
+                  // creates right line of the table, except for the last column
+                  style: { borderRight : idx !== array.length - 1 ? '1px solid #EEF1F2' : '' },
+                  //creates name for slot
+                  slotName: `header-${item.displayValue}-content`
+                }
+              }
+            })
     })
     /* eslint-enable */
+    const rows = computed(() => {
+      return props.dataSource
+    })
+
+    const isTableVisible = computed(() => {
+      return props.dataSource.length && props.columns.length
+    })
+
+    const isMainBodyOfTableVisible = ref(null)
+
+    if (props.isLoaderHard && props.isLoading) {
+      isMainBodyOfTableVisible.value = false
+    } else {
+      isMainBodyOfTableVisible.value = true
+    }
 
     const isLoader = ref(true)
     setTimeout(() => {
       isLoader.value = false
+      isMainBodyOfTableVisible.value = true
     }, 1000)
 
     return {
-      settings,
-      isLoader
+      mainColumns,
+      rows,
+      isLoader,
+      isTableVisible,
+      isMainBodyOfTableVisible
     }
   }
 }
@@ -121,9 +157,10 @@ export default {
     border-radius: 8px;
     width: fit-content;
     padding: 12px;
-    .loader {
+    position: relative;
+    .loader-soft {
       background: #efefef8a;
-      position: fixed;
+      position: absolute;
       top: 0;
       left: 0;
       width: 100%;
@@ -132,7 +169,18 @@ export default {
       justify-content: center;
       align-items: center;
       img {
-        width: 200px;
+        width: 150px;
+      }
+    }
+    .loader-hard {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      img {
+        width: 150px;
       }
     }
     table {
