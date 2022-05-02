@@ -17,7 +17,7 @@
       </template> -->
 
       <!-- <template #loader-soft>
-        <img src="./assets/img/loader2.gif" alt="">
+        <img src="./assets/img/loader.gif" alt="">
       </template> -->
 
       <!-- <template #empty-table>

@@ -13,7 +13,7 @@
       <div v-if="isLoaderHard">
         <div v-if="isLoader" class="loader-hard">
           <slot name="loader-hard"> <!-- Slot which shows loader -->
-            <img src="../assets/img/loader3.gif" alt="">
+            <img src="../assets/img/loader.gif" alt="">
           </slot>
         </div>
       </div>
@@ -71,7 +71,8 @@
 </template>
 
 <script>
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
+import useLoader from '../utils/useLoader'
 
 export default {
   name: 'main-table',
@@ -125,26 +126,11 @@ export default {
       return props.dataSource.length && props.columns.length
     })
 
-    const isMainBodyOfTableVisible = ref(null)
-
-    if (props.isLoaderHard && props.isLoading) {
-      isMainBodyOfTableVisible.value = false
-    } else {
-      isMainBodyOfTableVisible.value = true
-    }
-
-    const isLoader = ref(true)
-    setTimeout(() => {
-      isLoader.value = false
-      isMainBodyOfTableVisible.value = true
-    }, 1000)
-
     return {
       mainColumns,
       rows,
-      isLoader,
       isTableVisible,
-      isMainBodyOfTableVisible
+      ...useLoader(props.isLoaderHard, props.isLoading) // isMainBodyOfTableVisible, isLoader
     }
   }
 }
