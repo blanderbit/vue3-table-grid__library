@@ -6,11 +6,16 @@
       :isLoading ="true"
       :isLoaderSoft ="true"
       :isLoaderHard ="false"
-      @rowClick="indexRow"
+      @row-click="indexRow"
+      @mouseHover ="showHoverCellData"
     >
-      <template #header-name-content="{header}" >
-        {{ header.displayName }}
-      </template>
+      <!-- <template #header-calories-content="{header}" >
+        {{ header.displayName + 'lkj' }}
+      </template> -->
+
+      <!-- <template #header-calories-content >
+        My content
+      </template> -->
 
       <!-- <template #line-0_cell-3="{bodyCell}">
         {{ bodyCell * 2 }}
@@ -99,6 +104,9 @@ const desserts = reactive([
 
 const indexRow = rowData => {
   console.log(rowData)
+}
+const showHoverCellData = (cellData, e) => {
+  console.log(cellData, e)
 }
 </script>
 
