@@ -78,5 +78,16 @@ in props "{bodyCell}":
   {{ bodyCell }}
 </template>
 ```
+
+### How to add your color on row hover
+```
+In order to apply your custom color to row hover, you need to pass to the
+component backgroundColor prop a string with the color you need.
+Example:
+
+:backgroundColor ="'#f0f'"
+
+```
+
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).

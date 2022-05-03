@@ -45,6 +45,7 @@
           :key="rowIndex"
           @click="$emit('rowClick', row)"
           @mouseover="rowHover(row, $event)"
+          :style="bgStyle"
         > <!-- rowClick function emits index of the row on the top -->
           <td
             v-for="(header, idx) in mainColumns"
@@ -135,13 +136,19 @@ export default {
     const rowHover = (rowData, hoverEvent) => {
       ctx.emit('mouseHover', rowData, hoverEvent)
     }
+    const bgStyle = computed(() => {
+      return {
+        '--bg-color': props.backgroundColor
+      }
+    })
 
     return {
       mainColumns,
       rows,
       isTableVisible,
       ...useLoader(props.isLoaderHard, props.isLoading), // isMainBodyOfTableVisible, isLoader
-      rowHover
+      rowHover,
+      bgStyle
     }
   }
 }
@@ -192,6 +199,11 @@ $prefix: vt-;
         line-height: 20px;
         color: #001F2A;
         text-align: left;
+      }
+      tbody {
+        tr:hover {
+          background: var(--bg-color);
+        }
       }
     }
   }

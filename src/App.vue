@@ -6,6 +6,7 @@
       :isLoading ="true"
       :isLoaderSoft ="true"
       :isLoaderHard ="false"
+      :backgroundColor ="'#f0f'"
       @row-click="indexRow"
       @mouseHover ="showHoverCellData"
     >
