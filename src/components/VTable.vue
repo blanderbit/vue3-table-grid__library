@@ -1,73 +1,78 @@
 <template>
   <div class="vt-container">
-    <div v-if="isLoading" class="vt-loader-block">
+    <div
+      class="vt-table-wrapper"
+      :style="styleTableWrapper"
+    >
+      <div v-if="isLoading" class="vt-loader-block">
 
-      <div v-if="isLoaderSoft" >
-        <div v-if="isLoader" class="vt-loader-soft">
-          <slot name="loader-soft"> <!-- Slot which shows loader -->
-            <img src="../assets/img/loader.gif" alt="">
-          </slot>
-        </div>
-      </div>
-
-      <div v-if="isLoaderHard">
-        <div v-if="isLoader" class="vt-loader-hard">
-          <slot name="loader-hard"> <!-- Slot which shows loader -->
-            <img src="../assets/img/loader.gif" alt="">
-          </slot>
-        </div>
-      </div>
-
-    </div>
-    <table v-if="isTableVisible">
-      <thead> <!-- Header block -->
-        <tr>
-          <th
-            v-for="(header, idx) in mainColumns"
-            :key="idx"
-            :class="header._options.class"
-            :style="header._options.style"
-          >
-            <slot
-              :name="header._options.slotName"
-              :header="header"
-            > <!-- Slot for transmiting users data to header's cell -->
-              <span>
-                {{ header.displayName }}
-              </span>
+        <div v-if="isLoaderSoft" >
+          <div v-if="isLoader" class="vt-loader-soft">
+            <slot name="loader-soft"> <!-- Slot which shows loader -->
+              <img src="../assets/img/loader.gif" alt="">
             </slot>
-          </th>
-        </tr>
-      </thead>
-      <tbody v-if="isMainBodyOfTableVisible"> <!-- Main body block -->
-        <tr
-          v-for="(row, rowIndex) in rows"
-          :key="rowIndex"
-          @click="$emit('rowClick', row)"
-          @mouseover="rowHover(row, $event)"
-          :style="bgStyle"
-        > <!-- rowClick function emits index of the row on the top -->
-          <td
-            v-for="(header, idx) in mainColumns"
-            :key="idx"
-            :style="header._options.style"
-          >
-            <slot
-              :name="`line-${rowIndex}_cell-${idx}`"
-              :bodyCell="row[header.displayValue]"
+          </div>
+        </div>
+
+        <div v-if="isLoaderHard">
+          <div v-if="isLoader" class="vt-loader-hard">
+            <slot name="loader-hard"> <!-- Slot which shows loader -->
+              <img src="../assets/img/loader.gif" alt="">
+            </slot>
+          </div>
+        </div>
+
+      </div>
+      <table v-if="isTableVisible">
+        <thead :style="styleHeader"> <!-- Header block -->
+          <tr>
+            <th
+              v-for="(header, idx) in mainColumns"
+              :key="idx"
+              :class="header._options.class"
+              :style="header._options.style"
             >
-              <span> <!-- Slot for transmiting users data to main body table cell -->
-                {{ row[header.displayValue] }}
-              </span>
-            </slot>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    <div v-else class="vt-empty-table">
-      <slot name="empty-table"> <!-- Slot will be shown in case no data was provided -->
-        No data provided
-      </slot>
+              <slot
+                :name="header._options.slotName"
+                :header="header"
+              > <!-- Slot for transmiting users data to header's cell -->
+                <span>
+                  {{ header.displayName }}
+                </span>
+              </slot>
+            </th>
+          </tr>
+        </thead>
+        <tbody v-if="isMainBodyOfTableVisible"> <!-- Main body block -->
+          <tr
+            v-for="(row, rowIndex) in rows"
+            :key="rowIndex"
+            @click="$emit('rowClick', row)"
+            @mouseover="rowHover(row, $event)"
+            :style="bgStyle"
+          > <!-- rowClick function emits index of the row on the top -->
+            <td
+              v-for="(header, idx) in mainColumns"
+              :key="idx"
+              :style="header._options.style"
+            >
+              <slot
+                :name="`line-${rowIndex}_cell-${idx}`"
+                :bodyCell="row[header.displayValue]"
+              >
+                <span> <!-- Slot for transmiting users data to main body table cell -->
+                  {{ row[header.displayValue] }}
+                </span>
+              </slot>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <div v-else class="vt-empty-table">
+        <slot name="empty-table"> <!-- Slot will be shown in case no data was provided -->
+          No data provided
+        </slot>
+      </div>
     </div>
   </div>
 </template>
@@ -101,7 +106,15 @@ export default {
     },
     backgroundColor: {
       type: String,
-      default: '#ccc'
+      default: '#E5FDFD'
+    },
+    tableHeight: {
+      type: String,
+      default: ''
+    },
+    isHeaderSticky: {
+      type: Boolean,
+      default: false
     }
   },
   emits: ['mouseHover'],
@@ -144,6 +157,24 @@ export default {
         '--bg-color': props.backgroundColor
       }
     })
+    const styleTableWrapper = computed(() => {
+      if (props.tableHeight.length) {
+        return {
+          height: props.tableHeight + 'px',
+          'overflow-y': 'scroll'
+        }
+      }
+      return {}
+    })
+    const styleHeader = computed(() => {
+      if (props.isHeaderSticky) {
+        return {
+          position: 'sticky',
+          top: 0
+        }
+      }
+      return {}
+    })
 
     return {
       mainColumns,
@@ -151,7 +182,9 @@ export default {
       isTableVisible,
       ...useLoader(props.isLoaderHard, props.isLoading), // isMainBodyOfTableVisible, isLoader
       rowHover,
-      bgStyle
+      bgStyle,
+      styleTableWrapper,
+      styleHeader
     }
   }
 }
@@ -202,6 +235,19 @@ $prefix: vt-;
         line-height: 20px;
         color: #001F2A;
         text-align: left;
+      }
+      thead {
+        tr {
+          background: #F6F9FB;
+          th {
+            font-family: 'Inter';
+            font-style: normal;
+            font-weight: 500;
+            font-size: 14px;
+            line-height: 20px;
+            color: #001F2A;
+          }
+        }
       }
       tbody {
         tr:hover {
