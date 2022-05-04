@@ -44,7 +44,8 @@ const columns = reactive([
   },
   {
     displayName: 'Calories',
-    displayValue: 'calories'
+    displayValue: 'calories',
+    width: 200
   },
   {
     displayName: 'Fat (g)',
