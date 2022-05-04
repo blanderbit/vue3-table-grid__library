@@ -117,7 +117,10 @@ export default {
                   // creates class name for header table cell
                   class: `vt-col_name-${item.displayValue}`,
                   // creates right line of the table, except for the last column
-                  style: { borderRight : idx !== array.length - 1 ? '1px solid #EEF1F2' : '' },
+                  style: { 
+                    borderRight : idx !== array.length - 1 ? '1px solid #EEF1F2' : '',
+                    width: `${item.width}px`
+                  },
                   //creates name for slot
                   slotName: `header-${item.displayValue}-content`
                 }
