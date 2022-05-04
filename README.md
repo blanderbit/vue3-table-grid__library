@@ -88,6 +88,24 @@ Example:
 :backgroundColor ="'#f0f'"
 
 ```
+### How to make a fixed height of the table
+```
+Use tableHeight prop to transmit a string value into the component, the size 
+of height of the table you want in pixels.
+Example:
 
+:tableHeight ="'200'"
+
+It means that the table will have 200px height
+
+```
+### How to fix header of the table
+```
+Use isHeaderSticky prop. To make header sticky transmit boolean value true to
+the prop. To make it not sticky, transmit false or just skip this prop.
+Example:
+
+:isHeaderSticky ="true"
+```
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).

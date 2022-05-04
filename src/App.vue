@@ -6,7 +6,8 @@
       :isLoading ="true"
       :isLoaderSoft ="true"
       :isLoaderHard ="false"
-      :backgroundColor ="'#f0f'"
+      :tableHeight ="'200'"
+      :isHeaderSticky ="true"
       @row-click="indexRow"
       @mouseHover ="showHoverCellData"
     >
@@ -100,6 +101,27 @@ const desserts = reactive([
     carbs: 98,
     management: 'f',
     burger: 'netu'
+  },
+  {
+    name: 'Ice cream',
+    calories: 34,
+    fat: 4.7,
+    carbs: 67,
+    management: null
+  },
+  {
+    name: 'Pudding',
+    calories: 2345,
+    fat: 2.2,
+    carbs: 98,
+    management: 'f'
+  },
+  {
+    name: 'Salad with apples',
+    calories: 555,
+    fat: 6.2,
+    carbs: 98,
+    management: 'f'
   }
 ])
 
