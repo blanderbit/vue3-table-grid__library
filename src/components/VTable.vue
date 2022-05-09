@@ -23,7 +23,7 @@
         </div>
 
       </div>
-      <table v-if="isTableVisible">
+      <table v-if="isTableVisible" class="vt-table">
         <thead :style="styleHeader"> <!-- Header block -->
           <tr>
             <th
@@ -55,6 +55,10 @@
               v-for="(header, idx) in mainColumns"
               :key="idx"
               :style="header._options.style"
+              :class=" [
+                { 'vt-table__item--fixed-side': header.fixed },
+                {'empty' : header.displayValue === 'empty'},
+              ]"
             >
               <slot
                 :name="`line-${rowIndex}_cell-${idx}`"
@@ -78,8 +82,9 @@
 </template>
 
 <script>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import useLoader from '../utils/useLoader'
+// import { useSetupFixedColumnsHook } from '../hooks/use-setup-fixed-columns.hook'
 
 export default {
   name: 'main-table',
@@ -128,11 +133,17 @@ export default {
                 ...item,
                 _options: {
                   // creates class name for header table cell
-                  class: `vt-col_name-${item.displayValue}`,
+                  class: [
+                    `vt-col_name-${item.displayValue}`,
+                    { 'vt-table__header__item--fixed-side': item.fixed },
+                    { 'empty' : item.displayValue === 'empty' }
+                  ],
                   // creates right line of the table, except for the last column
                   style: { 
                     borderRight : idx !== array.length - 1 ? '1px solid #EEF1F2' : '',
-                    width: `${item.width}px`
+                    width: `${item.width}px`,
+                    'min-width': `${item.width}px`,
+                    left: item.fixed ? setLeftMargin() : ''
                   },
                   //creates name for slot
                   slotName: `header-${item.displayValue}-content`
@@ -141,10 +152,24 @@ export default {
             })
     })
     /* eslint-enable */
-
     const rows = computed(() => {
       return props.dataSource
     })
+
+    const setLeftMargin = () => {
+    /* eslint-disable */
+      if (setLeftMargin.count === 0) {
+        setLeftMargin.count++
+        return '12px'
+      }
+      return `${130 * setLeftMargin.count++}px`
+    }
+    setLeftMargin.count = 0
+
+    const numberOfFixedTables = computed(() => {
+      return props.columns.filter(item => item.fixed).length
+    })
+    console.log(numberOfFixedTables)
 
     const isTableVisible = computed(() => {
       return props.dataSource.length && props.columns.length
@@ -163,6 +188,10 @@ export default {
           height: props.tableHeight + 'px',
           'overflow-y': 'scroll'
         }
+      } else if (numberOfFixedTables.value > 0) {
+        return {
+          'margin-left': `${124 * numberOfFixedTables.value}px`
+        }
       }
       return {}
     })
@@ -174,6 +203,16 @@ export default {
         }
       }
       return {}
+    })
+    onMounted(() => {
+      const table = document.querySelector('.vt-table')
+      if (!table) return
+
+      const applyFixedColumnsHook = mainColumns.value.some(item => item.fixed)
+
+      if (applyFixedColumnsHook) {
+        // useSetupFixedColumnsHook(table)
+      }
     })
 
     return {
@@ -199,59 +238,108 @@ $prefix: vt-;
     width: fit-content;
     padding: 12px;
     position: relative;
-    .#{$prefix}loader-soft {
-      background: #efefef8a;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      img {
-        width: 150px;
-      }
-    }
-    .#{$prefix}loader-hard {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      img {
-        width: 150px;
-      }
-    }
-    table {
-      border-collapse: collapse;
-      td, th {
-        padding: 10px 12px;
-        font-family: 'Inter';
-        font-style: normal;
-        font-weight: 400;
-        font-size: 14px;
-        line-height: 20px;
-        color: #001F2A;
-        text-align: left;
-      }
-      thead {
-        tr {
-          background: #F6F9FB;
-          th {
-            font-family: 'Inter';
-            font-style: normal;
-            font-weight: 500;
-            font-size: 14px;
-            line-height: 20px;
-            color: #001F2A;
-          }
+
+    .#{$prefix}table-wrapper {
+      width: 400px;
+      overflow-x: scroll;
+
+      .#{$prefix}loader-soft {
+        background: #efefef8a;
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        img {
+          width: 150px;
         }
       }
-      tbody {
-        tr:hover {
-          background: var(--bg-color);
+      .#{$prefix}loader-hard {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        img {
+          width: 150px;
+        }
+      }
+      .vt-table {
+        border-collapse: collapse;
+        &__header {
+          &__item {
+            &--fixed-side {
+              position: absolute;
+              left: 0;
+              /* background: rgb(153, 215, 153); */
+              span {
+                width: 100px;
+                display: block;
+              }
+            }
+          }
+        }
+        &__item {
+          &--fixed-side {
+            position: absolute;
+            left: 0;
+            top: auto;
+            border-bottom-width: 1px;
+            padding: 0;
+            border-left-width: 1px;
+            /* background: rgb(153, 215, 153); */
+            span {
+              display: block;
+              width: 100px;
+              max-width: 100px;
+              /* padding: 10px; */
+              box-sizing: border-box;
+            }
+          }
+        }
+        td, th {
+          padding: 10px 12px;
+          font-family: 'Inter';
+          font-style: normal;
+          font-weight: 400;
+          font-size: 14px;
+          line-height: 20px;
+          color: #001F2A;
+          text-align: left;
+          span {
+            clear: both;
+            display: inline-block;
+            overflow: hidden;
+            white-space: nowrap;
+          }
+        }
+        .empty {
+          background: red;
+        }
+        thead {
+          tr {
+            background: #F6F9FB;
+            th {
+              font-family: 'Inter';
+              font-style: normal;
+              font-weight: 500;
+              font-size: 14px;
+              line-height: 20px;
+              color: #001F2A;
+              background: #F6F9FB;
+            }
+          }
+        }
+        tbody {
+          tr {
+            &:hover {
+              background: var(--bg-color);
+            }
+          }
         }
       }
     }
