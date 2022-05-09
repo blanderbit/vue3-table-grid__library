@@ -6,11 +6,12 @@
       :isLoading ="true"
       :isLoaderSoft ="true"
       :isLoaderHard ="false"
-      :tableHeight ="'200'"
-      :isHeaderSticky ="true"
+      :tableHeight ="''"
+      :isHeaderSticky ="false"
       @row-click="indexRow"
       @mouseHover ="showHoverCellData"
     >
+
       <!-- <template #header-calories-content="{header}" >
         {{ header.displayName + 'lkj' }}
       </template> -->
@@ -30,31 +31,35 @@
       <!-- <template #empty-table>
         Enter some data
       </template> -->
+
     </VTable>
   </div>
 </template>
 
 <script setup>
+/* eslint-disable */
 import { reactive } from 'vue'
 import VTable from './components/VTable.vue'
 
 const columns = reactive([
   {
     displayName: 'Dessert (100g serving)',
-    displayValue: 'name'
+    displayValue: 'name',
+    fixed: true
   },
   {
     displayName: 'Calories',
-    displayValue: 'calories',
-    width: 200
+    displayValue: 'calories'
   },
   {
     displayName: 'Fat (g)',
-    displayValue: 'fat'
+    displayValue: 'fat',
+    fixed: true
   },
   {
     displayName: 'Carbs (g)',
-    displayValue: 'carbs'
+    displayValue: 'carbs',
+    fixed: true
   },
   {
     displayName: 'Management',
@@ -62,7 +67,13 @@ const columns = reactive([
   },
   {
     displayName: 'Burger',
-    displayValue: 'burger'
+    displayValue: 'burger',
+    width: '300'
+  },
+  {
+    displayName: 'Pizza',
+    displayValue: 'pizza',
+    width: '300'
   }
 ])
 const desserts = reactive([
@@ -71,14 +82,16 @@ const desserts = reactive([
     calories: 45,
     fat: 6.0,
     carbs: 24,
-    management: null
+    management: null,
+    empty: ''
   },
   {
     name: 'Ice cream sandwich',
     calories: 345,
     fat: 9.0,
     carbs: 34,
-    management: null
+    management: null,
+    empty: ''
   },
   {
     name: 'Cupcake',
@@ -86,14 +99,17 @@ const desserts = reactive([
     fat: 3.7,
     carbs: 67,
     management: null,
-    burger: 'eat'
+    burger: '343',
+    empty: ''
   },
   {
     name: 'Lollipop',
     calories: 392,
     fat: 0.2,
     carbs: 98,
-    management: 'f'
+    management: 'f',
+    pizza: 'grande',
+    empty: ''
   },
   {
     name: '5555555555',
@@ -101,28 +117,33 @@ const desserts = reactive([
     fat: 0.2,
     carbs: 98,
     management: 'f',
-    burger: 'netu'
+    empty: ''
   },
   {
     name: 'Ice cream',
     calories: 34,
     fat: 4.7,
     carbs: 67,
-    management: null
+    management: null,
+    burger: '34344444',
+    empty: ''
   },
   {
     name: 'Pudding',
     calories: 2345,
     fat: 2.2,
     carbs: 98,
-    management: 'f'
+    management: 'f',
+    pizza: 'pizzza',
+    empty: ''
   },
   {
     name: 'Salad with apples',
     calories: 555,
     fat: 6.2,
     carbs: 98,
-    management: 'f'
+    management: 'f',
+    empty: ''
   }
 ])
 
@@ -135,6 +156,9 @@ const showHoverCellData = (cellData, e) => {
 </script>
 
 <style lang="scss">
+* {
+  box-sizing: border-box;
+}
 body {
   margin: 0;
   padding: 0;
