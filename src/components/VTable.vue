@@ -140,7 +140,7 @@ export default {
                   ],
                   // creates right line of the table, except for the last column
                   style: { 
-                    borderRight : idx !== array.length - 1 ? '1px solid #EEF1F2' : '',
+                    borderRight : setRightBorder(item, idx, array),
                     width: `${item.width}px`,
                     'min-width': `${item.width}px`,
                     left: item.fixed ? setLeftMargin() : ''
@@ -155,7 +155,20 @@ export default {
     const rows = computed(() => {
       return props.dataSource
     })
-
+    const setRightBorder = (item, idx, array) => {
+      if (lastFixedTableValue.value === item.displayValue) {
+        return '1px solid #154555'
+      }
+      return idx !== array.length - 1 ? '1px solid #EEF1F2' : ''
+    }
+    const lastFixedTableValue = computed(() => {
+      const fixedColsLength = props.columns.filter(item => item.fixed).length
+      const fixedCols = props.columns.filter(item => item.fixed)
+      if (fixedColsLength) {
+        return fixedCols[fixedColsLength - 1].displayValue
+      }
+      return null
+    })
     const setLeftMargin = () => {
     /* eslint-disable */
       if (setLeftMargin.count === 0) {
