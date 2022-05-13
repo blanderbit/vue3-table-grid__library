@@ -46,7 +46,7 @@
                   v-if="sortable"
                   class="vt-select-button-block"
                   @click="sortColumn(header.id, header._options.isOptionsVisible, header.displayValue)"
-                  :style="{ background: sortArrowColor }"
+                  :style="sortArrowStyles[header._options.sortArrowsState]"
                 >
                   <slot name="sorting-arrows">
                     <img src="../assets/img/sort-up.svg"
@@ -183,7 +183,11 @@ export default {
     },
     headerColor: {
       type: String,
-      default: ''
+      default: '#F6F9FB'
+    },
+    sortArrowBackground: {
+      type: String,
+      default: '#A0B0B9'
     }
   },
   emits: ['mouseHover', 'sortValue'],
@@ -216,6 +220,7 @@ export default {
                   //creates name for slot
                   slotName: `header-${item.displayValue}-content`,
                   isOptionsVisible: sortedState[idx],
+                  sortArrowsState: sortArrowsState[idx]
                 }
               }
             })
@@ -224,48 +229,43 @@ export default {
 
     const sortedState = reactive(Object.fromEntries(new Array(props.columns.length).fill('l').map((_, idx) => ([idx, false]))))
 
+    const sortArrowsState = reactive(Object.fromEntries(new Array(props.columns.length).fill('l').map((_, idx) => ([idx, 0]))))
+
     const sortColumn = (id, isWindowVisible, nameVal) => {
       if (props.isShownSortableWindow) {
         sortedState[id] = !isWindowVisible
       } else {
-        ctx.emit('sortValue', nameVal, getNumber(nameVal))
+        ctx.emit('sortValue', nameVal, getNumber(nameVal, id))
       }
     }
-    const someVar = ref(0)
-    const getNumber = nameVal => {
-      someVar.value++
+    const sortArrowStyles = {
+      0: { background: props.sortArrowBackground },
+      1: { background: `linear-gradient(to bottom, rgba(125,185,232,0) 0%,rgba(159,176,186,0) 50%, ${props.sortArrowBackground} 50%)` },
+      2: { background: `linear-gradient(to bottom, ${props.sortArrowBackground} 50%,rgba(159,176,186,0) 50%,rgba(125,185,232,0) 100%)` }
+    }
+    const arrowValue = ref(0)
+    const getNumber = (nameVal, id) => {
       if (getNumber.value !== nameVal) {
+        for (const key in sortArrowsState) sortArrowsState[key] = 0
         getNumber.value = nameVal
-        getNumber.number = 0
-        return getNumber.number
+        arrowValue.value = 1
+        sortArrowsState[id] = 1
+        return arrowValue.value
       }
-      if (getNumber.number !== 2) {
-        return ++getNumber.number
+      if (arrowValue.value !== 2) {
+        arrowValue.value++
+        sortArrowsState[id] = arrowValue.value
+        return arrowValue.value
       } else {
-        getNumber.number = 0
-        return getNumber.number
+        sortArrowsState[id] = 0
+        arrowValue.value = 0
+        return arrowValue.value
       }
     }
     getNumber.value = null
-    getNumber.number = 0
 
     const rows = computed(() => {
       return props.dataSource
-    })
-
-    const sortArrowColor = computed(() => {
-      let value = null
-      console.log(someVar.value)
-      // console.log(getNumber.number)
-      switch (getNumber.number) {
-        case 0: value = props.headerColor
-          break
-        case 1: value = 'linear-gradient(to bottom, #1e5799 0%, #2989d8 50%, #c60000 50%, #e20000 100%)'
-          break
-        case 2: value = 'linear-gradient(to bottom, #ce27ce 0%,#ce27ce 50%,#ce27ce 50%,#3ef900 50%,#3ef900 50%,#3ef900 100%)'
-          break
-      }
-      return value
     })
 
     const setRightBorder = (item, idx, array) => {
@@ -345,7 +345,7 @@ export default {
       sortColumn,
       sortOption,
       SORT,
-      sortArrowColor
+      sortArrowStyles
     }
   }
 }

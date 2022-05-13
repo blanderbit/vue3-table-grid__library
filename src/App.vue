@@ -11,6 +11,7 @@
       :isHeaderSticky ="false"
       :sortable ="true"
       :isShownSortableWindow ="false"
+      :sortArrowBackground ="'#A0B0B9'"
       @row-click="indexRow"
       @sort-value="sortColumn"
       @mouseHover ="showHoverCellData"
@@ -47,6 +48,9 @@
 import { reactive, ref } from 'vue'
 import VTable from './components/VTable.vue'
 
+// сортировка по алфавитному порядку
+// сортировка по числам
+// сортировка по дате
 const columns = reactive([
   {
     displayName: 'Dessert (100g serving)',
@@ -167,10 +171,10 @@ const sortColumn = (nameVal, sortVal) => {
       desserts.value = dessertsInitial
       break
     case 'desc':
-      desserts.value = [...dessertsInitial].sort((a, b) => (a[sortBy.value] > b[sortBy.value]) ? 1 : ((b[sortBy.value] > a[sortBy.value]) ? -1 : 0))
+      desserts.value = [...dessertsInitial].sort((a, b) => (a[sortBy.value] > b[sortBy.value]) ? 1 : ((b[sortBy.value] > a[sortBy.value]) ? -1 : 0)).reverse()
       break
     case 'asc':
-      desserts.value = [...dessertsInitial].sort((a, b) => (a[sortBy.value] > b[sortBy.value]) ? 1 : ((b[sortBy.value] > a[sortBy.value]) ? -1 : 0)).reverse()
+      desserts.value = [...dessertsInitial].sort((a, b) => (a[sortBy.value] > b[sortBy.value]) ? 1 : ((b[sortBy.value] > a[sortBy.value]) ? -1 : 0))
       break
   }
 }
