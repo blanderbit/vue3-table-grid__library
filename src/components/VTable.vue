@@ -30,16 +30,62 @@
               v-for="(header, idx) in mainColumns"
               :key="idx"
               :class="header._options.class"
-              :style="header._options.style"
+              :style="{background: headerColor, ...header._options.style}"
             >
-              <slot
-                :name="header._options.slotName"
-                :header="header"
-              > <!-- Slot for transmiting users data to header's cell -->
-                <span>
-                  {{ header.displayName }}
-                </span>
-              </slot>
+              <div class="vt-header-cell-wrapper">
+                <slot
+                  :name="header._options.slotName"
+                  :header="header"
+                > <!-- Slot for transmiting users data to header's cell -->
+                  <span>
+                    {{ header.displayName }}
+                  </span>
+                </slot>
+
+                <div
+                  v-if="sortable"
+                  class="vt-select-button-block"
+                  @click="sortColumn(header.id, header._options.isOptionsVisible, header.displayValue)"
+                  :style="{ background: sortArrowColor }"
+                >
+                  <slot name="sorting-arrows">
+                    <img src="../assets/img/sort-up.svg"
+                      alt=""
+                      class="arrow-top"
+                    >
+                    <img
+                      src="../assets/img/sort-down.svg"
+                      alt=""
+                      class="arrow-bottom"
+                    >
+                  </slot>
+                  <div
+                    v-if="header._options.isOptionsVisible"
+                    class="vt-select-options"
+                  >
+                    <ul>
+                      <li
+                        class="vt-option"
+                        @click="sortOption(header.displayValue, SORT.DEF)"
+                      >
+                        Default
+                      </li>
+                      <li
+                        class="vt-option"
+                        @click="sortOption(header.displayValue, SORT.DESC)"
+                      >
+                        Descending
+                      </li>
+                      <li
+                        class="vt-option"
+                        @click="sortOption(header.displayValue, SORT.ASC)"
+                      >
+                        Ascending
+                      </li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
             </th>
           </tr>
         </thead>
@@ -82,9 +128,15 @@
 </template>
 
 <script>
-import { computed, onMounted } from 'vue'
+import {
+  computed,
+  reactive,
+  watch,
+  ref
+} from 'vue'
 import useLoader from '../utils/useLoader'
-// import { useSetupFixedColumnsHook } from '../hooks/use-setup-fixed-columns.hook'
+
+import { SORT } from '../utils/consts'
 
 export default {
   name: 'main-table',
@@ -120,10 +172,25 @@ export default {
     isHeaderSticky: {
       type: Boolean,
       default: false
+    },
+    sortable: {
+      type: Boolean,
+      default: false
+    },
+    isShownSortableWindow: {
+      type: Boolean,
+      default: false
+    },
+    headerColor: {
+      type: String,
+      default: ''
     }
   },
-  emits: ['mouseHover'],
+  emits: ['mouseHover', 'sortValue'],
   setup (props, ctx) {
+    watch(() => props.dataSource, () => {
+      console.log('prop dataSource changed', props.dataSource)
+    })
     /* eslint-disable */
     const mainColumns = computed(() => {
       return props.columns
@@ -131,6 +198,7 @@ export default {
             .map((item, idx, array) => {
               return {
                 ...item,
+                id: idx,
                 _options: {
                   // creates class name for header table cell
                   class: [
@@ -143,18 +211,63 @@ export default {
                     borderRight : setRightBorder(item, idx, array),
                     width: `${item.width}px`,
                     'min-width': `${item.width}px`,
-                    left: item.fixed ? setLeftMargin() : ''
+                    left: item.fixed ? setLeftMargin() : '',
                   },
                   //creates name for slot
-                  slotName: `header-${item.displayValue}-content`
+                  slotName: `header-${item.displayValue}-content`,
+                  isOptionsVisible: sortedState[idx],
                 }
               }
             })
     })
     /* eslint-enable */
+
+    const sortedState = reactive(Object.fromEntries(new Array(props.columns.length).fill('l').map((_, idx) => ([idx, false]))))
+
+    const sortColumn = (id, isWindowVisible, nameVal) => {
+      if (props.isShownSortableWindow) {
+        sortedState[id] = !isWindowVisible
+      } else {
+        ctx.emit('sortValue', nameVal, getNumber(nameVal))
+      }
+    }
+    const someVar = ref(0)
+    const getNumber = nameVal => {
+      someVar.value++
+      if (getNumber.value !== nameVal) {
+        getNumber.value = nameVal
+        getNumber.number = 0
+        return getNumber.number
+      }
+      if (getNumber.number !== 2) {
+        return ++getNumber.number
+      } else {
+        getNumber.number = 0
+        return getNumber.number
+      }
+    }
+    getNumber.value = null
+    getNumber.number = 0
+
     const rows = computed(() => {
       return props.dataSource
     })
+
+    const sortArrowColor = computed(() => {
+      let value = null
+      console.log(someVar.value)
+      // console.log(getNumber.number)
+      switch (getNumber.number) {
+        case 0: value = props.headerColor
+          break
+        case 1: value = 'linear-gradient(to bottom, #1e5799 0%, #2989d8 50%, #c60000 50%, #e20000 100%)'
+          break
+        case 2: value = 'linear-gradient(to bottom, #ce27ce 0%,#ce27ce 50%,#ce27ce 50%,#3ef900 50%,#3ef900 50%,#3ef900 100%)'
+          break
+      }
+      return value
+    })
+
     const setRightBorder = (item, idx, array) => {
       if (lastFixedTableValue.value === item.displayValue) {
         return '1px solid #154555'
@@ -170,7 +283,6 @@ export default {
       return null
     })
     const setLeftMargin = () => {
-    /* eslint-disable */
       if (setLeftMargin.count === 0) {
         setLeftMargin.count++
         return '12px'
@@ -182,7 +294,6 @@ export default {
     const numberOfFixedTables = computed(() => {
       return props.columns.filter(item => item.fixed).length
     })
-    console.log(numberOfFixedTables)
 
     const isTableVisible = computed(() => {
       return props.dataSource.length && props.columns.length
@@ -217,16 +328,10 @@ export default {
       }
       return {}
     })
-    onMounted(() => {
-      const table = document.querySelector('.vt-table')
-      if (!table) return
-
-      const applyFixedColumnsHook = mainColumns.value.some(item => item.fixed)
-
-      if (applyFixedColumnsHook) {
-        // useSetupFixedColumnsHook(table)
-      }
-    })
+    const sortOption = (nameVal, sortVal) => {
+      console.log(nameVal, sortVal)
+      ctx.emit('sortValue', nameVal, sortVal)
+    }
 
     return {
       mainColumns,
@@ -236,7 +341,11 @@ export default {
       rowHover,
       bgStyle,
       styleTableWrapper,
-      styleHeader
+      styleHeader,
+      sortColumn,
+      sortOption,
+      SORT,
+      sortArrowColor
     }
   }
 }
@@ -253,8 +362,8 @@ $prefix: vt-;
     position: relative;
 
     .#{$prefix}table-wrapper {
-      width: 400px;
-      overflow-x: scroll;
+      /* width: 400px; */
+      /* overflow-x: scroll; */
 
       .#{$prefix}loader-soft {
         background: #efefef8a;
@@ -335,7 +444,6 @@ $prefix: vt-;
         }
         thead {
           tr {
-            background: #F6F9FB;
             th {
               font-family: 'Inter';
               font-style: normal;
@@ -343,7 +451,51 @@ $prefix: vt-;
               font-size: 14px;
               line-height: 20px;
               color: #001F2A;
-              background: #F6F9FB;
+              .#{$prefix}header-cell-wrapper {
+                display: flex;
+                .#{$prefix}select-button-block {
+                  margin-left: 4px;
+                  position: relative;
+                  width: 20px;
+                  height: 20px;
+                  border-radius: 6px;
+                  display: flex;
+                  justify-content: space-around;
+                  align-items: center;
+                  flex-direction: column;
+                  &:hover {
+                    cursor: pointer;
+                    background: #A0B0B9;
+                  }
+                  .#{$prefix}select-options {
+                    position: absolute;
+                    left: 30px;
+                    top: -10px;
+                    background: #FFFFFF;
+                    box-shadow: 0px 4px 20px rgba(2, 61, 151, 0.1);
+                    border-radius: 6px;
+                    z-index: 1;
+                    .#{$prefix}option {
+                      padding: 4px 6px;
+                      font-family: 'Inter';
+                      font-style: normal;
+                      font-weight: 400;
+                      font-size: 12px;
+                      line-height: 16px;
+                      color: #154555;
+                      list-style: none;
+                      /* margin-bottom: 4px; */
+                      &:hover {
+                        background: #E5FDFD;
+                        color: #31677B;
+                      }
+                      &:last-child {
+                        margin-bottom: 0;
+                      }
+                    }
+                  }
+                }
+              }
             }
           }
         }

@@ -7,10 +7,17 @@
       :isLoaderSoft ="true"
       :isLoaderHard ="false"
       :tableHeight ="''"
+      :headerColor ="'#F6F9FB'"
       :isHeaderSticky ="false"
+      :sortable ="true"
+      :isShownSortableWindow ="false"
       @row-click="indexRow"
+      @sort-value="sortColumn"
       @mouseHover ="showHoverCellData"
     >
+      <!-- <template #sorting-arrows>
+        <img src="./assets/img/sort-down.svg" alt="">
+      </template> -->
 
       <!-- <template #header-calories-content="{header}" >
         {{ header.displayName + 'lkj' }}
@@ -37,15 +44,13 @@
 </template>
 
 <script setup>
-/* eslint-disable */
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import VTable from './components/VTable.vue'
 
 const columns = reactive([
   {
     displayName: 'Dessert (100g serving)',
-    displayValue: 'name',
-    fixed: true
+    displayValue: 'name'
   },
   {
     displayName: 'Calories',
@@ -53,13 +58,11 @@ const columns = reactive([
   },
   {
     displayName: 'Fat (g)',
-    displayValue: 'fat',
-    fixed: true
+    displayValue: 'fat'
   },
   {
     displayName: 'Carbs (g)',
-    displayValue: 'carbs',
-    fixed: true
+    displayValue: 'carbs'
   },
   {
     displayName: 'Management',
@@ -67,16 +70,14 @@ const columns = reactive([
   },
   {
     displayName: 'Burger',
-    displayValue: 'burger',
-    width: '300'
+    displayValue: 'burger'
   },
   {
     displayName: 'Pizza',
-    displayValue: 'pizza',
-    width: '300'
+    displayValue: 'pizza'
   }
 ])
-const desserts = reactive([
+const dessertsInitial = reactive([
   {
     name: 'Frozen Yogurt',
     calories: 45,
@@ -112,7 +113,7 @@ const desserts = reactive([
     empty: ''
   },
   {
-    name: '5555555555',
+    name: 'burgerssss',
     calories: 392,
     fat: 0.2,
     carbs: 98,
@@ -147,11 +148,31 @@ const desserts = reactive([
   }
 ])
 
+const desserts = ref(dessertsInitial)
+
 const indexRow = rowData => {
   console.log(rowData)
 }
 const showHoverCellData = (cellData, e) => {
   console.log(cellData, e)
+}
+
+const sortBy = ref('')
+const sortColumn = (nameVal, sortVal) => {
+  console.log(sortVal)
+  sortBy.value = nameVal
+  const arr = ['def', 'desc', 'asc']
+  switch (arr[sortVal]) {
+    case 'def':
+      desserts.value = dessertsInitial
+      break
+    case 'desc':
+      desserts.value = [...dessertsInitial].sort((a, b) => (a[sortBy.value] > b[sortBy.value]) ? 1 : ((b[sortBy.value] > a[sortBy.value]) ? -1 : 0))
+      break
+    case 'asc':
+      desserts.value = [...dessertsInitial].sort((a, b) => (a[sortBy.value] > b[sortBy.value]) ? 1 : ((b[sortBy.value] > a[sortBy.value]) ? -1 : 0)).reverse()
+      break
+  }
 }
 </script>
 
@@ -159,7 +180,7 @@ const showHoverCellData = (cellData, e) => {
 * {
   box-sizing: border-box;
 }
-body {
+body, ul {
   margin: 0;
   padding: 0;
 }
