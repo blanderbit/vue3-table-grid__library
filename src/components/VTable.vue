@@ -43,47 +43,28 @@
                 </slot>
 
                 <div
-                  v-if="sortable"
+                  v-if="header.sortable"
                   class="vt-select-button-block"
-                  @click="sortColumn(header.id, header._options.isOptionsVisible, header.displayValue)"
-                  :style="sortArrowStyles[header._options.sortArrowsState]"
+                  @click="sortColumn(header)"
+                  :style="header._options.sortArrowStyle"
                 >
                   <slot name="sorting-arrows">
                     <img src="../assets/img/sort-up.svg"
                       alt=""
                       class="arrow-top"
+                      :style="header._options.sortArrowStyle.arrowTop"
                     >
                     <img
                       src="../assets/img/sort-down.svg"
                       alt=""
                       class="arrow-bottom"
+                      :style="header._options.sortArrowStyle.arrowBottom"
                     >
                   </slot>
-                  <div
-                    v-if="header._options.isOptionsVisible"
-                    class="vt-select-options"
-                  >
-                    <ul>
-                      <li
-                        class="vt-option"
-                        @click="sortOption(header.displayValue, SORT.DEF)"
-                      >
-                        Default
-                      </li>
-                      <li
-                        class="vt-option"
-                        @click="sortOption(header.displayValue, SORT.DESC)"
-                      >
-                        Descending
-                      </li>
-                      <li
-                        class="vt-option"
-                        @click="sortOption(header.displayValue, SORT.ASC)"
-                      >
-                        Ascending
-                      </li>
-                    </ul>
-                  </div>
+                  <VSortDropdown
+                    :header ="header"
+                    @dropdown-click="sortOption"
+                  />
                 </div>
               </div>
             </th>
@@ -128,18 +109,17 @@
 </template>
 
 <script>
-import {
-  computed,
-  reactive,
-  watch,
-  ref
-} from 'vue'
-import useLoader from '../utils/useLoader'
+import { computed, ref } from 'vue'
+import VSortDropdown from '../components/VSortDropdown.vue'
 
-import { SORT } from '../utils/consts'
+import useLoader from '../utils/useLoader'
+import makeObjectFromEntries from '../utils/makeObjectFromEntries'
 
 export default {
   name: 'main-table',
+  components: {
+    VSortDropdown
+  },
   props: {
     dataSource: { // Here must be trasmited an array with objects for showing header
       type: Array,
@@ -173,14 +153,6 @@ export default {
       type: Boolean,
       default: false
     },
-    sortable: {
-      type: Boolean,
-      default: false
-    },
-    isShownSortableWindow: {
-      type: Boolean,
-      default: false
-    },
     headerColor: {
       type: String,
       default: '#F6F9FB'
@@ -192,9 +164,6 @@ export default {
   },
   emits: ['mouseHover', 'sortValue'],
   setup (props, ctx) {
-    watch(() => props.dataSource, () => {
-      console.log('prop dataSource changed', props.dataSource)
-    })
     /* eslint-disable */
     const mainColumns = computed(() => {
       return props.columns
@@ -217,9 +186,23 @@ export default {
                     'min-width': `${item.width}px`,
                     left: item.fixed ? setLeftMargin() : '',
                   },
+                  sortArrowStyle: {
+                    background: item.sortArrowBackground || '#A0B0B9',
+                    arrowTop: { 
+                      filter: sortArrowsState[idx] === 2 ? 
+                      'invert(90%) sepia(6%) saturate(102%) hue-rotate(171deg) brightness(108%) contrast(97%)' : 
+                      'invert(10%) sepia(13%) saturate(4958%) hue-rotate(159deg) brightness(95%) contrast(102%)' 
+                    },
+                    arrowBottom: { 
+                      filter: sortArrowsState[idx] === 1 ? 
+                      'invert(90%) sepia(6%) saturate(102%) hue-rotate(171deg) brightness(108%) contrast(97%)' : 
+                      'invert(10%) sepia(13%) saturate(4958%) hue-rotate(159deg) brightness(95%) contrast(102%)' 
+                    }
+                  },
                   //creates name for slot
                   slotName: `header-${item.displayValue}-content`,
-                  isOptionsVisible: sortedState[idx],
+                  isOptionsVisible: item.isShownSortableWindow || false,
+                  isOptionsOpened: sortedState[idx],
                   sortArrowsState: sortArrowsState[idx]
                 }
               }
@@ -227,27 +210,24 @@ export default {
     })
     /* eslint-enable */
 
-    const sortedState = reactive(Object.fromEntries(new Array(props.columns.length).fill('l').map((_, idx) => ([idx, false]))))
+    const sortedState = makeObjectFromEntries(props.columns, false)
 
-    const sortArrowsState = reactive(Object.fromEntries(new Array(props.columns.length).fill('l').map((_, idx) => ([idx, 0]))))
+    const sortArrowsState = makeObjectFromEntries(props.columns, 0)
 
-    const sortColumn = (id, isWindowVisible, nameVal) => {
-      if (props.isShownSortableWindow) {
-        sortedState[id] = !isWindowVisible
+    const sortColumn = ({ id, _options, displayValue }) => {
+      if (_options.isOptionsVisible) {
+        sortedState[id] = !_options.isOptionsOpened
       } else {
-        ctx.emit('sortValue', nameVal, getNumber(nameVal, id))
+        ctx.emit('sortValue', displayValue, getNumberOfSortDirection(displayValue, id))
       }
+      console.log(sortArrowsState)
     }
-    const sortArrowStyles = {
-      0: { background: props.sortArrowBackground },
-      1: { background: `linear-gradient(to bottom, rgba(125,185,232,0) 0%,rgba(159,176,186,0) 50%, ${props.sortArrowBackground} 50%)` },
-      2: { background: `linear-gradient(to bottom, ${props.sortArrowBackground} 50%,rgba(159,176,186,0) 50%,rgba(125,185,232,0) 100%)` }
-    }
+
     const arrowValue = ref(0)
-    const getNumber = (nameVal, id) => {
-      if (getNumber.value !== nameVal) {
+    const getNumberOfSortDirection = (nameVal, id) => {
+      if (getNumberOfSortDirection.value !== nameVal) {
         for (const key in sortArrowsState) sortArrowsState[key] = 0
-        getNumber.value = nameVal
+        getNumberOfSortDirection.value = nameVal
         arrowValue.value = 1
         sortArrowsState[id] = 1
         return arrowValue.value
@@ -262,7 +242,7 @@ export default {
         return arrowValue.value
       }
     }
-    getNumber.value = null
+    getNumberOfSortDirection.value = null
 
     const rows = computed(() => {
       return props.dataSource
@@ -328,7 +308,9 @@ export default {
       }
       return {}
     })
-    const sortOption = (nameVal, sortVal) => {
+    const sortOption = ({ displayValue: nameVal, id }, sortVal) => {
+      for (const key in sortArrowsState) sortArrowsState[key] = 0
+      sortArrowsState[id] = sortVal
       console.log(nameVal, sortVal)
       ctx.emit('sortValue', nameVal, sortVal)
     }
@@ -343,9 +325,7 @@ export default {
       styleTableWrapper,
       styleHeader,
       sortColumn,
-      sortOption,
-      SORT,
-      sortArrowStyles
+      sortOption
     }
   }
 }
@@ -466,33 +446,6 @@ $prefix: vt-;
                   &:hover {
                     cursor: pointer;
                     background: #A0B0B9;
-                  }
-                  .#{$prefix}select-options {
-                    position: absolute;
-                    left: 30px;
-                    top: -10px;
-                    background: #FFFFFF;
-                    box-shadow: 0px 4px 20px rgba(2, 61, 151, 0.1);
-                    border-radius: 6px;
-                    z-index: 1;
-                    .#{$prefix}option {
-                      padding: 4px 6px;
-                      font-family: 'Inter';
-                      font-style: normal;
-                      font-weight: 400;
-                      font-size: 12px;
-                      line-height: 16px;
-                      color: #154555;
-                      list-style: none;
-                      /* margin-bottom: 4px; */
-                      &:hover {
-                        background: #E5FDFD;
-                        color: #31677B;
-                      }
-                      &:last-child {
-                        margin-bottom: 0;
-                      }
-                    }
                   }
                 }
               }

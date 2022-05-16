@@ -9,9 +9,6 @@
       :tableHeight ="''"
       :headerColor ="'#F6F9FB'"
       :isHeaderSticky ="false"
-      :sortable ="true"
-      :isShownSortableWindow ="false"
-      :sortArrowBackground ="'#A0B0B9'"
       @row-click="indexRow"
       @sort-value="sortColumn"
       @mouseHover ="showHoverCellData"
@@ -48,21 +45,23 @@
 import { reactive, ref } from 'vue'
 import VTable from './components/VTable.vue'
 
-// сортировка по алфавитному порядку
-// сортировка по числам
-// сортировка по дате
 const columns = reactive([
   {
     displayName: 'Dessert (100g serving)',
-    displayValue: 'name'
+    displayValue: 'name',
+    sortable: true,
+    sortArrowBackground: '#f0f',
+    isShownSortableWindow: true
   },
   {
     displayName: 'Calories',
-    displayValue: 'calories'
+    displayValue: 'calories',
+    sortable: true
   },
   {
     displayName: 'Fat (g)',
-    displayValue: 'fat'
+    displayValue: 'fat',
+    sortable: true
   },
   {
     displayName: 'Carbs (g)',
@@ -163,7 +162,6 @@ const showHoverCellData = (cellData, e) => {
 
 const sortBy = ref('')
 const sortColumn = (nameVal, sortVal) => {
-  console.log(sortVal)
   sortBy.value = nameVal
   const arr = ['def', 'desc', 'asc']
   switch (arr[sortVal]) {
