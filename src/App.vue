@@ -44,6 +44,7 @@
 <script setup>
 import { reactive, ref } from 'vue'
 import VTable from './components/VTable.vue'
+import { SORT } from './utils/consts'
 
 const columns = reactive([
   {
@@ -161,19 +162,17 @@ const showHoverCellData = (cellData, e) => {
 }
 
 const sortBy = ref('')
-const sortColumn = (nameVal, sortVal) => {
-  sortBy.value = nameVal
-  const arr = ['def', 'desc', 'asc']
-  switch (arr[sortVal]) {
-    case 'def':
-      desserts.value = dessertsInitial
-      break
-    case 'desc':
+const sortColumn = (header, sortVal) => {
+  sortBy.value = header.displayValue
+  switch (sortVal) {
+    case SORT.DESC:
       desserts.value = [...dessertsInitial].sort((a, b) => (a[sortBy.value] > b[sortBy.value]) ? 1 : ((b[sortBy.value] > a[sortBy.value]) ? -1 : 0)).reverse()
       break
-    case 'asc':
+    case SORT.ASC:
       desserts.value = [...dessertsInitial].sort((a, b) => (a[sortBy.value] > b[sortBy.value]) ? 1 : ((b[sortBy.value] > a[sortBy.value]) ? -1 : 0))
       break
+    default:
+      desserts.value = dessertsInitial
   }
 }
 </script>

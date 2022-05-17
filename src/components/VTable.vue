@@ -109,11 +109,12 @@
 </template>
 
 <script>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted } from 'vue'
 import VSortDropdown from '../components/VSortDropdown.vue'
 
 import useLoader from '../utils/useLoader'
 import makeObjectFromEntries from '../utils/makeObjectFromEntries'
+import { SORT } from '../utils/consts'
 
 export default {
   name: 'main-table',
@@ -189,21 +190,20 @@ export default {
                   sortArrowStyle: {
                     background: item.sortArrowBackground || '#A0B0B9',
                     arrowTop: { 
-                      filter: sortArrowsState[idx] === 2 ? 
-                      'invert(90%) sepia(6%) saturate(102%) hue-rotate(171deg) brightness(108%) contrast(97%)' : 
+                      filter: sortArrowsState[idx] === SORT.ASC ? 
+                      'invert(90%) sepia(6%) saturate(102%) hue-rotate(171deg) brightness(108%) contrast(97%)' : //light
                       'invert(10%) sepia(13%) saturate(4958%) hue-rotate(159deg) brightness(95%) contrast(102%)' 
                     },
                     arrowBottom: { 
-                      filter: sortArrowsState[idx] === 1 ? 
-                      'invert(90%) sepia(6%) saturate(102%) hue-rotate(171deg) brightness(108%) contrast(97%)' : 
+                      filter: sortArrowsState[idx] === SORT.DESC ? 
+                      'invert(90%) sepia(6%) saturate(102%) hue-rotate(171deg) brightness(108%) contrast(97%)' : //light
                       'invert(10%) sepia(13%) saturate(4958%) hue-rotate(159deg) brightness(95%) contrast(102%)' 
                     }
                   },
                   //creates name for slot
                   slotName: `header-${item.displayValue}-content`,
                   isOptionsVisible: item.isShownSortableWindow || false,
-                  isOptionsOpened: sortedState[idx],
-                  sortArrowsState: sortArrowsState[idx]
+                  isOptionsOpened: sortedState[idx]
                 }
               }
             })
@@ -212,37 +212,60 @@ export default {
 
     const sortedState = makeObjectFromEntries(props.columns, false)
 
-    const sortArrowsState = makeObjectFromEntries(props.columns, 0)
+    const sortArrowsState = makeObjectFromEntries(props.columns, '')
 
-    const sortColumn = ({ id, _options, displayValue }) => {
+    const arrowValue = ref(SORT.DEF)
+    const isInitialSort = props.columns.filter(i => i.initialSort)
+    if (isInitialSort.length) {
+      arrowValue.value = isInitialSort[0].initialSort
+      getNumberOfSortDirection.value = isInitialSort[0].displayValue
+      const initialSortId = props.columns.map((item, idx) => {
+        if (item.initialSort) return idx
+        return ''
+      })
+      const id = initialSortId.join('')
+      sortArrowsState[id] = isInitialSort[0].initialSort
+    }
+
+    const sortColumn = (header) => {
+      const { id, _options, displayValue } = header
       if (_options.isOptionsVisible) {
         sortedState[id] = !_options.isOptionsOpened
       } else {
-        ctx.emit('sortValue', displayValue, getNumberOfSortDirection(displayValue, id))
+        ctx.emit('sortValue', header, getNumberOfSortDirection(displayValue, id))
       }
       console.log(sortArrowsState)
     }
 
-    const arrowValue = ref(0)
-    const getNumberOfSortDirection = (nameVal, id) => {
+    function getNumberOfSortDirection (nameVal, id) {
       if (getNumberOfSortDirection.value !== nameVal) {
-        for (const key in sortArrowsState) sortArrowsState[key] = 0
+        for (const key in sortArrowsState) sortArrowsState[key] = SORT.DEF
         getNumberOfSortDirection.value = nameVal
-        arrowValue.value = 1
-        sortArrowsState[id] = 1
+        arrowValue.value = SORT.DESC
+        sortArrowsState[id] = SORT.DESC
         return arrowValue.value
       }
-      if (arrowValue.value !== 2) {
-        arrowValue.value++
-        sortArrowsState[id] = arrowValue.value
-        return arrowValue.value
-      } else {
-        sortArrowsState[id] = 0
-        arrowValue.value = 0
-        return arrowValue.value
+      switch (arrowValue.value) {
+        case SORT.DEF: {
+          sortArrowsState[id] = SORT.DESC
+          arrowValue.value = SORT.DESC
+          return arrowValue.value
+        }
+        case SORT.DESC: {
+          arrowValue.value = SORT.ASC
+          sortArrowsState[id] = SORT.ASC
+          return arrowValue.value
+        }
+        case SORT.ASC: {
+          arrowValue.value = SORT.DEF
+          sortArrowsState[id] = SORT.DEF
+          return arrowValue.value
+        }
       }
     }
-    getNumberOfSortDirection.value = null
+    if (!isInitialSort.length) {
+      getNumberOfSortDirection.value = null
+    }
 
     const rows = computed(() => {
       return props.dataSource
@@ -308,12 +331,19 @@ export default {
       }
       return {}
     })
-    const sortOption = ({ displayValue: nameVal, id }, sortVal) => {
-      for (const key in sortArrowsState) sortArrowsState[key] = 0
+    const sortOption = (header, sortVal) => {
+      const { id } = header
+      for (const key in sortArrowsState) sortArrowsState[key] = ''
       sortArrowsState[id] = sortVal
-      console.log(nameVal, sortVal)
-      ctx.emit('sortValue', nameVal, sortVal)
+      ctx.emit('sortValue', header, sortVal)
     }
+
+    onMounted(() => {
+      const isInitialSort = props.columns.filter((header) => header.initialSort)
+      if (isInitialSort.length) {
+        ctx.emit('sortValue', isInitialSort[0], isInitialSort[0].initialSort)
+      }
+    })
 
     return {
       mainColumns,
@@ -434,6 +464,7 @@ $prefix: vt-;
               .#{$prefix}header-cell-wrapper {
                 display: flex;
                 .#{$prefix}select-button-block {
+                  user-select: none;
                   margin-left: 4px;
                   position: relative;
                   width: 20px;
