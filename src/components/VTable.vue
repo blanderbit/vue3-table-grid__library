@@ -9,7 +9,7 @@
         <div v-if="isLoaderSoft" >
           <div v-if="isLoader" class="vt-loader-soft">
             <slot name="loader-soft"> <!-- Slot which shows loader -->
-              <img src="../assets/img/loader.gif" alt="">
+              <img :src="loader64" alt="">
             </slot>
           </div>
         </div>
@@ -17,7 +17,7 @@
         <div v-if="isLoaderHard">
           <div v-if="isLoader" class="vt-loader-hard">
             <slot name="loader-hard"> <!-- Slot which shows loader -->
-              <img src="../assets/img/loader.gif" alt="">
+              <img :src="loader64" alt="">
             </slot>
           </div>
         </div>
@@ -48,14 +48,16 @@
                   @click="sortColumn(header)"
                   :style="header._options.sortArrowStyle"
                 >
-                  <slot name="sorting-arrows">
-                    <img src="../assets/img/sort-up.svg"
+                  <slot name="arrow-top" :active="header._options.arrowSortState === SORT.ASC">
+                    <img :src="sortUp64"
                       alt=""
                       class="arrow-top"
                       :style="header._options.sortArrowStyle.arrowTop"
                     >
+                  </slot>
+                  <slot name="arrow-bottom" :active="header._options.arrowSortState === SORT.DESC">
                     <img
-                      src="../assets/img/sort-down.svg"
+                      :src="sortDown64"
                       alt=""
                       class="arrow-bottom"
                       :style="header._options.sortArrowStyle.arrowBottom"
@@ -114,7 +116,23 @@ import VSortDropdown from '../components/VSortDropdown.vue'
 
 import useLoader from '../utils/useLoader'
 import makeObjectFromEntries from '../utils/makeObjectFromEntries'
-import { SORT } from '../utils/consts'
+import { sortDown64, loader64, sortUp64, SORT } from '../utils/consts'
+
+// async function toDataURL (url) {
+//   await fetch(url)
+//     .then(response => response.blob())
+//     .then(blob => new Promise((resolve, reject) => {
+//       const reader = new FileReader()
+//       reader.onloadend = () => resolve(reader.result)
+//       reader.onerror = reject
+//       reader.readAsDataURL(blob)
+//     }))
+//     .then(dataUrl => {
+//       console.log('RESULT:', dataUrl)
+//     })
+// }
+
+// toDataURL(LoaderPic)
 
 export default {
   name: 'main-table',
@@ -203,7 +221,8 @@ export default {
                   //creates name for slot
                   slotName: `header-${item.displayValue}-content`,
                   isOptionsVisible: item.isShownSortableWindow || false,
-                  isOptionsOpened: sortedState[idx]
+                  isOptionsOpened: sortedState[idx],
+                  arrowSortState: sortArrowsState[idx]
                 }
               }
             })
@@ -234,7 +253,6 @@ export default {
       } else {
         ctx.emit('sortValue', header, getNumberOfSortDirection(displayValue, id))
       }
-      console.log(sortArrowsState)
     }
 
     function getNumberOfSortDirection (nameVal, id) {
@@ -355,7 +373,11 @@ export default {
       styleTableWrapper,
       styleHeader,
       sortColumn,
-      sortOption
+      sortOption,
+      SORT,
+      sortDown64,
+      loader64,
+      sortUp64
     }
   }
 }

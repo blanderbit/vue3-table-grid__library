@@ -21,7 +21,7 @@ npm run lint
 ```
 ### Library installment
 ```
-1. In the project where you want to install the library. In command line type - npm i <...path to the folder with library>.
+1. In the project where you want to install the library. In command line type - npm i <..path to the folder with library>.
 
 2. In vue.config.js file in your project, you will need to add the fallowing code:
   const path = require('path')
@@ -106,6 +106,57 @@ the prop. To make it not sticky, transmit false or just skip this prop.
 Example:
 
 :isHeaderSticky ="true"
+```
+### How to apply custom arrows for sorting columns
+```
+Apply two templates with names: #arrow-top, #arrow-bottom. In each template put
+img tag of the arrow. Receiving "active" prop, you can apply your own class
+to your img tag.
+Example:
+
+<template #arrow-top="{active}">
+  <img src="arrow.svg"
+    alt=""
+    :class="{ arrowStyle : active }"
+  >
+</template>
+```
+### How to make a column sortable
+```
+To make column sortable you need to add a key 'sortable' with a boolean value
+to the object of a column.
+Example:
+{
+  displayName: 'column N',
+  displayValue: 'fat',
+  sortable: true
+}
+
+```
+### How to change a background for sorting arrows
+```
+You need to add a key 'sortArrowBackground' to the object of needed column, with
+the value of the color.
+Example:
+{
+  displayName: 'column N',
+  displayValue: 'fat',
+  sortArrowBackground: '#f0f'
+}
+
+```
+### How to show sortable window
+```
+On the sort button can be called a window with options, to choose wich kind of
+sorting method you need. To activate this window you need to pass a boolean
+value into a 'isShownSortableWindow' key in the object of a column.
+Example:
+{
+  displayName: 'column N',
+  displayValue: 'fat',
+  isShownSortableWindow: true
+}
+
 ```
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).

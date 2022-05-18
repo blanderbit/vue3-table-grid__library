@@ -13,12 +13,21 @@
       @sort-value="sortColumn"
       @mouseHover ="showHoverCellData"
     >
-      <!-- <template #sorting-arrows>
-        <img src="./assets/img/sort-down.svg" alt="">
+      <!-- <template #arrow-top="{active}">
+        <img src="./assets/img/arrow2.svg"
+          alt=""
+          :class="{ arrowStyle : active }"
+        >
+      </template>
+      <template #arrow-bottom="{active}">
+        <img src="./assets/img/arrow2.svg"
+        alt=""
+        :class="{ arrowStyle : active }"
+        >
       </template> -->
 
       <!-- <template #header-calories-content="{header}" >
-        {{ header.displayName + 'lkj' }}
+        {{ header.displayName + '123' }}
       </template> -->
 
       <!-- <template #header-calories-content >
@@ -191,5 +200,8 @@ body, ul {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
+}
+.arrowStyle {
+  filter: invert(63%) sepia(69%) saturate(4207%) hue-rotate(87deg) brightness(111%) contrast(131%);
 }
 </style>
