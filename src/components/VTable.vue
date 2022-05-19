@@ -26,6 +26,15 @@
       <table v-if="isTableVisible" class="vt-table">
         <thead :style="styleHeader"> <!-- Header block -->
           <tr>
+            <th v-if="showSelect">
+              <slot>
+                <VCheckbox
+                  id="mark-all"
+                  :checked="isMarkedAllCheckboxes"
+                  @checkbox-changed="selectAllCheckboxChanged"
+                />
+              </slot>
+            </th>
             <th
               v-for="(header, idx) in mainColumns"
               :key="idx"
@@ -51,6 +60,14 @@
             @mouseover="rowHover(row, $event)"
             :style="bgStyle"
           > <!-- rowClick function emits index of the row on the top -->
+            <td v-if="showSelect">
+              <!-- {{ mainColumns[rowIndex] }} -->
+              <slot>
+                <VCheckbox
+                  :checked="isMarkedAllCheckboxes"
+                />
+              </slot>
+            </td>
             <td
               v-for="(header, idx) in mainColumns"
               :key="idx"
@@ -82,12 +99,16 @@
 </template>
 
 <script>
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import useLoader from '../utils/useLoader'
+import VCheckbox from '../components/VCheckbox.vue'
 // import { useSetupFixedColumnsHook } from '../hooks/use-setup-fixed-columns.hook'
 
 export default {
   name: 'main-table',
+  components: {
+    VCheckbox
+  },
   props: {
     dataSource: { // Here must be trasmited an array with objects for showing header
       type: Array,
@@ -120,6 +141,10 @@ export default {
     isHeaderSticky: {
       type: Boolean,
       default: false
+    },
+    showSelect: {
+      type: Boolean,
+      default: false
     }
   },
   emits: ['mouseHover'],
@@ -131,6 +156,7 @@ export default {
             .map((item, idx, array) => {
               return {
                 ...item,
+                id: idx,
                 _options: {
                   // creates class name for header table cell
                   class: [
@@ -146,11 +172,13 @@ export default {
                     left: item.fixed ? setLeftMargin() : ''
                   },
                   //creates name for slot
-                  slotName: `header-${item.displayValue}-content`
+                  slotName: `header-${item.displayValue}-content`,
+                  isChecked: true
                 }
               }
             })
     })
+    
     /* eslint-enable */
     const rows = computed(() => {
       return props.dataSource
@@ -228,6 +256,11 @@ export default {
       }
     })
 
+    const isMarkedAllCheckboxes = ref(false)
+    const selectAllCheckboxChanged = val => {
+      isMarkedAllCheckboxes.value = !val
+    }
+
     return {
       mainColumns,
       rows,
@@ -236,7 +269,9 @@ export default {
       rowHover,
       bgStyle,
       styleTableWrapper,
-      styleHeader
+      styleHeader,
+      isMarkedAllCheckboxes,
+      selectAllCheckboxChanged
     }
   }
 }
@@ -253,8 +288,8 @@ $prefix: vt-;
     position: relative;
 
     .#{$prefix}table-wrapper {
-      width: 400px;
-      overflow-x: scroll;
+      /* width: 400px;
+      overflow-x: scroll; */
 
       .#{$prefix}loader-soft {
         background: #efefef8a;

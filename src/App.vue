@@ -8,6 +8,7 @@
       :isLoaderHard ="false"
       :tableHeight ="''"
       :isHeaderSticky ="false"
+      :showSelect ="true"
       @row-click="indexRow"
       @mouseHover ="showHoverCellData"
     >
@@ -44,8 +45,7 @@ import VTable from './components/VTable.vue'
 const columns = reactive([
   {
     displayName: 'Dessert (100g serving)',
-    displayValue: 'name',
-    fixed: true
+    displayValue: 'name'
   },
   {
     displayName: 'Calories',
@@ -53,13 +53,11 @@ const columns = reactive([
   },
   {
     displayName: 'Fat (g)',
-    displayValue: 'fat',
-    fixed: true
+    displayValue: 'fat'
   },
   {
     displayName: 'Carbs (g)',
-    displayValue: 'carbs',
-    fixed: true
+    displayValue: 'carbs'
   },
   {
     displayName: 'Management',
