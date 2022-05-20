@@ -26,7 +26,7 @@
       <table v-if="isTableVisible" class="vt-table">
         <thead :style="styleHeader"> <!-- Header block -->
           <tr>
-            <th v-if="showSelect">
+            <th v-if="showSelect" class="vt-checkbox-cell">
               <slot>
                 <VCheckbox
                   id="mark-all"
@@ -60,11 +60,15 @@
             @mouseover="rowHover(row, $event)"
             :style="bgStyle"
           > <!-- rowClick function emits index of the row on the top -->
-            <td v-if="showSelect">
+            <td v-if="showSelect" class="vt-checkbox-cell">
               <!-- {{ mainColumns[rowIndex] }} -->
               <slot>
+                <!-- {{ rowSelectState[rowIndex] }}
+                {{ rowIndex }} -->
                 <VCheckbox
-                  :checked="isMarkedAllCheckboxes"
+                  :id="rowIndex"
+                  :checked="isMarkedAllCheckboxes || rowSelectState[rowIndex]"
+                  @checkbox-changed="selectPrticularLine"
                 />
               </slot>
             </td>
@@ -99,7 +103,7 @@
 </template>
 
 <script>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, reactive } from 'vue'
 import useLoader from '../utils/useLoader'
 import VCheckbox from '../components/VCheckbox.vue'
 // import { useSetupFixedColumnsHook } from '../hooks/use-setup-fixed-columns.hook'
@@ -147,7 +151,7 @@ export default {
       default: false
     }
   },
-  emits: ['mouseHover'],
+  emits: ['mouseHover', 'multipleSelectMod'],
   setup (props, ctx) {
     /* eslint-disable */
     const mainColumns = computed(() => {
@@ -172,17 +176,20 @@ export default {
                     left: item.fixed ? setLeftMargin() : ''
                   },
                   //creates name for slot
-                  slotName: `header-${item.displayValue}-content`,
-                  isChecked: true
+                  slotName: `header-${item.displayValue}-content`
                 }
               }
             })
     })
-    
+    console.log(mainColumns)
     /* eslint-enable */
     const rows = computed(() => {
       return props.dataSource
     })
+    console.log(rows)
+
+    const rowSelectState = reactive(Object.fromEntries(new Array(props.dataSource.length).fill('l').map((_, idx) => ([idx, false]))))
+
     const setRightBorder = (item, idx, array) => {
       if (lastFixedTableValue.value === item.displayValue) {
         return '1px solid #154555'
@@ -257,8 +264,15 @@ export default {
     })
 
     const isMarkedAllCheckboxes = ref(false)
-    const selectAllCheckboxChanged = val => {
+    const selectAllCheckboxChanged = (val) => {
       isMarkedAllCheckboxes.value = !val
+      ctx.emit('multipleSelectMod', [...props.dataSource])
+      for (let key in rowSelectState) rowSelectState[key] = !val
+    }
+    const selectPrticularLine = (val, id) => {
+      console.log(val, id)
+      rowSelectState[id] = !val
+      console.log(rowSelectState)
     }
 
     return {
@@ -271,7 +285,9 @@ export default {
       styleTableWrapper,
       styleHeader,
       isMarkedAllCheckboxes,
-      selectAllCheckboxChanged
+      selectAllCheckboxChanged,
+      rowSelectState,
+      selectPrticularLine
     }
   }
 }
@@ -371,6 +387,9 @@ $prefix: vt-;
         thead {
           tr {
             background: #F6F9FB;
+            .#{$prefix}checkbox-cell {
+              border-right: 1px solid #EEF1F2;
+            }
             th {
               font-family: 'Inter';
               font-style: normal;
@@ -384,6 +403,9 @@ $prefix: vt-;
         }
         tbody {
           tr {
+            .#{$prefix}checkbox-cell {
+              border-right: 1px solid #EEF1F2;
+            }
             &:hover {
               background: var(--bg-color);
             }
