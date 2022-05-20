@@ -149,6 +149,10 @@ export default {
     showSelect: {
       type: Boolean,
       default: false
+    },
+    showMultipleSelect: {
+      type: Boolean,
+      default: false
     }
   },
   emits: ['mouseHover', 'multipleSelectMod'],

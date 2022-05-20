@@ -9,6 +9,7 @@
       :tableHeight ="''"
       :isHeaderSticky ="false"
       :showSelect ="true"
+      :showMultipleSelect ="false"
       @row-click="indexRow"
       @mouseHover ="showHoverCellData"
       @multiple-select-mod ="multipleChooseArray"
