@@ -256,6 +256,7 @@ export default {
     }
 
     function getNumberOfSortDirection (nameVal, id) {
+      console.log('')
       if (getNumberOfSortDirection.value !== nameVal) {
         for (const key in sortArrowsState) sortArrowsState[key] = SORT.DEF
         getNumberOfSortDirection.value = nameVal
