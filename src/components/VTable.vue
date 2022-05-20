@@ -118,22 +118,6 @@ import useLoader from '../utils/useLoader'
 import makeObjectFromEntries from '../utils/makeObjectFromEntries'
 import { sortDown64, loader64, sortUp64, SORT } from '../utils/consts'
 
-// async function toDataURL (url) {
-//   await fetch(url)
-//     .then(response => response.blob())
-//     .then(blob => new Promise((resolve, reject) => {
-//       const reader = new FileReader()
-//       reader.onloadend = () => resolve(reader.result)
-//       reader.onerror = reject
-//       reader.readAsDataURL(blob)
-//     }))
-//     .then(dataUrl => {
-//       console.log('RESULT:', dataUrl)
-//     })
-// }
-
-// toDataURL(LoaderPic)
-
 export default {
   name: 'main-table',
   components: {
@@ -183,7 +167,6 @@ export default {
   },
   emits: ['mouseHover', 'sortValue'],
   setup (props, ctx) {
-    /* eslint-disable */
     const mainColumns = computed(() => {
       return props.columns
             .filter((header) => header.displayValue && header.displayName)
@@ -209,12 +192,12 @@ export default {
                     background: item.sortArrowBackground || '#A0B0B9',
                     arrowTop: { 
                       filter: sortArrowsState[idx] === SORT.ASC ? 
-                      'invert(90%) sepia(6%) saturate(102%) hue-rotate(171deg) brightness(108%) contrast(97%)' : //light
+                      'invert(90%) sepia(6%) saturate(102%) hue-rotate(171deg) brightness(108%) contrast(97%)' :
                       'invert(10%) sepia(13%) saturate(4958%) hue-rotate(159deg) brightness(95%) contrast(102%)' 
                     },
                     arrowBottom: { 
                       filter: sortArrowsState[idx] === SORT.DESC ? 
-                      'invert(90%) sepia(6%) saturate(102%) hue-rotate(171deg) brightness(108%) contrast(97%)' : //light
+                      'invert(90%) sepia(6%) saturate(102%) hue-rotate(171deg) brightness(108%) contrast(97%)' :
                       'invert(10%) sepia(13%) saturate(4958%) hue-rotate(159deg) brightness(95%) contrast(102%)' 
                     }
                   },
@@ -227,7 +210,6 @@ export default {
               }
             })
     })
-    /* eslint-enable */
 
     const sortedState = makeObjectFromEntries(props.columns, false)
 
@@ -256,7 +238,6 @@ export default {
     }
 
     function getNumberOfSortDirection (nameVal, id) {
-      console.log('')
       if (getNumberOfSortDirection.value !== nameVal) {
         for (const key in sortArrowsState) sortArrowsState[key] = SORT.DEF
         getNumberOfSortDirection.value = nameVal
@@ -395,9 +376,6 @@ $prefix: vt-;
     position: relative;
 
     .#{$prefix}table-wrapper {
-      /* width: 400px; */
-      /* overflow-x: scroll; */
-
       .#{$prefix}loader-soft {
         background: #efefef8a;
         position: absolute;
@@ -430,7 +408,6 @@ $prefix: vt-;
             &--fixed-side {
               position: absolute;
               left: 0;
-              /* background: rgb(153, 215, 153); */
               span {
                 width: 100px;
                 display: block;
@@ -446,12 +423,10 @@ $prefix: vt-;
             border-bottom-width: 1px;
             padding: 0;
             border-left-width: 1px;
-            /* background: rgb(153, 215, 153); */
             span {
               display: block;
               width: 100px;
               max-width: 100px;
-              /* padding: 10px; */
               box-sizing: border-box;
             }
           }
