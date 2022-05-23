@@ -1,6 +1,6 @@
 {
-  "name": "table-grid-library",
-  "version": "0.1.0",
+  "name": "@blanderbit/vue3-table-grid",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -19,6 +19,23 @@
     "vue-router": "^4.0.3",
     "vuex": "^4.0.0"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/blanderbit/table-grid-library.git"
+  },
+  "keywords": [
+    "vue",
+    "table-grid-library",
+    "vue3-table-grid-library",
+    "table-grid",
+    "data-grid",
+    "smart-table"
+  ],
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/blanderbit/table-grid-library/issues"
+  },
+  "homepage": "https://github.com/blanderbit/table-grid-library#readme",
   "devDependencies": {
     "@babel/core": "^7.12.16",
     "@babel/eslint-parser": "^7.12.16",
@@ -34,8 +51,10 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-promise": "^5.1.0",
     "eslint-plugin-vue": "^8.0.3",
+    "file-loader": "^6.2.0",
     "sass": "^1.32.7",
-    "sass-loader": "^12.0.0"
+    "sass-loader": "^12.0.0",
+    "url-loader": "^4.1.1"
   },
   "eslintConfig": {
     "root": true,

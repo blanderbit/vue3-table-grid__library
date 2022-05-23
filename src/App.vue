@@ -145,12 +145,12 @@ const desserts = reactive([
   }
 ])
 
-// const indexRow = rowData => {
-//   console.log(rowData)
-// }
-// const showHoverCellData = (cellData, e) => {
-//   console.log(cellData, e)
-// }
+const indexRow = rowData => {
+  console.log(rowData)
+}
+const showHoverCellData = (cellData, e) => {
+  console.log(cellData, e)
+}
 const showSelected = array => {
   console.log(array)
 }
