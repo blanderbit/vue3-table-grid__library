@@ -8,13 +8,13 @@
       :isLoaderHard ="false"
       :tableHeight ="''"
       :isHeaderSticky ="false"
-      :showSelect ="true"
-      :showMultipleSelect ="false"
+      :showSelect ="'default'"
       @row-click="indexRow"
       @mouseHover ="showHoverCellData"
       @multiple-select-mod ="multipleChooseArray"
+      @once-select-mod ="onceSelect"
     >
-
+      <!-- multiple, single -->
       <!-- <template #header-calories-content="{header}" >
         {{ header.displayName + 'lkj' }}
       </template> -->
@@ -147,13 +147,16 @@ const desserts = reactive([
   }
 ])
 
-const indexRow = rowData => {
-  console.log(rowData)
-}
+// const indexRow = rowData => {
+//   console.log(rowData)
+// }
 // const showHoverCellData = (cellData, e) => {
 //   console.log(cellData, e)
 // }
 const multipleChooseArray = array => {
+  console.log(array)
+}
+const onceSelect = array => {
   console.log(array)
 }
 </script>

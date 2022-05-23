@@ -34,7 +34,6 @@ export default {
       return `vt-checkbox-id-${props.id}`
     })
     const onChange = () => {
-      console.log('onChange', props.checked)
       context.emit('checkbox-changed', props.checked, props.id)
     }
 

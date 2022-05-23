@@ -26,7 +26,7 @@
       <table v-if="isTableVisible" class="vt-table">
         <thead :style="styleHeader"> <!-- Header block -->
           <tr>
-            <th v-if="showSelect" class="vt-checkbox-cell">
+            <th v-if="showMultiple" class="vt-checkbox-cell">
               <slot>
                 <VCheckbox
                   id="mark-all"
@@ -35,6 +35,7 @@
                 />
               </slot>
             </th>
+            <th v-if="showSingle && !showMultiple"></th>
             <th
               v-for="(header, idx) in mainColumns"
               :key="idx"
@@ -60,11 +61,8 @@
             @mouseover="rowHover(row, $event)"
             :style="bgStyle"
           > <!-- rowClick function emits index of the row on the top -->
-            <td v-if="showSelect" class="vt-checkbox-cell">
-              <!-- {{ mainColumns[rowIndex] }} -->
+            <td v-if="showSingle || showMultiple" class="vt-checkbox-cell">
               <slot>
-                <!-- {{ rowSelectState[rowIndex] }}
-                {{ rowIndex }} -->
                 <VCheckbox
                   :id="rowIndex"
                   :checked="isMarkedAllCheckboxes || rowSelectState[rowIndex]"
@@ -147,15 +145,11 @@ export default {
       default: false
     },
     showSelect: {
-      type: Boolean,
-      default: false
-    },
-    showMultipleSelect: {
-      type: Boolean,
-      default: false
+      type: String,
+      default: 'default' // multiple, single
     }
   },
-  emits: ['mouseHover', 'multipleSelectMod'],
+  emits: ['rowClick', 'mouseHover', 'multipleSelectMod', 'onceSelectMod'],
   setup (props, ctx) {
     /* eslint-disable */
     const mainColumns = computed(() => {
@@ -185,14 +179,22 @@ export default {
               }
             })
     })
-    console.log(mainColumns)
+
     /* eslint-enable */
     const rows = computed(() => {
       return props.dataSource
     })
-    console.log(rows)
+
+    // multiple, single
+    const showMultiple = computed(() => {
+      return props.showSelect === 'multiple'
+    })
+    const showSingle = computed(() => {
+      return props.showSelect === 'single' || props.showSelect === 'multiple'
+    })
 
     const rowSelectState = reactive(Object.fromEntries(new Array(props.dataSource.length).fill('l').map((_, idx) => ([idx, false]))))
+    // console.log(rowSelectState)
 
     const setRightBorder = (item, idx, array) => {
       if (lastFixedTableValue.value === item.displayValue) {
@@ -221,7 +223,6 @@ export default {
     const numberOfFixedTables = computed(() => {
       return props.columns.filter(item => item.fixed).length
     })
-    console.log(numberOfFixedTables)
 
     const isTableVisible = computed(() => {
       return props.dataSource.length && props.columns.length
@@ -270,13 +271,23 @@ export default {
     const isMarkedAllCheckboxes = ref(false)
     const selectAllCheckboxChanged = (val) => {
       isMarkedAllCheckboxes.value = !val
-      ctx.emit('multipleSelectMod', [...props.dataSource])
+      if (!val) {
+        ctx.emit('multipleSelectMod', [...props.dataSource])
+      }
       for (let key in rowSelectState) rowSelectState[key] = !val
     }
     const selectPrticularLine = (val, id) => {
-      console.log(val, id)
+      isMarkedAllCheckboxes.value = false
       rowSelectState[id] = !val
-      console.log(rowSelectState)
+      let arr = []
+      for (let key in rowSelectState) {
+        if (rowSelectState[key]) {
+          arr.push(props.dataSource[key])
+        }
+      }
+      if (arr.length) {
+        ctx.emit('onceSelectMod', arr)
+      }
     }
 
     return {
@@ -291,7 +302,9 @@ export default {
       isMarkedAllCheckboxes,
       selectAllCheckboxChanged,
       rowSelectState,
-      selectPrticularLine
+      selectPrticularLine,
+      showMultiple,
+      showSingle
     }
   }
 }

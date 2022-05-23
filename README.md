@@ -107,5 +107,17 @@ Example:
 
 :isHeaderSticky ="true"
 ```
+### How to make arrow selection
+```
+There are three types of arrow selection. To choose the slection mode you need
+to add 'showSelect' prop and pass one of three string values:
+'default' - without any selection.
+'single' - selecting checkbox will appear in the beginning of each line.
+'multiple' - in adition to checkboxes in the beginning of each line, one checkbox
+will appear in the left top corner, which will give the possibility to mark all lines.
+Example:
+
+:showSelect ="'multiple'"
+```
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).
