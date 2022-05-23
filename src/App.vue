@@ -7,27 +7,14 @@
       :isLoaderSoft ="true"
       :isLoaderHard ="false"
       :tableHeight ="''"
-      :headerColor ="'#F6F9FB'"
       :isHeaderSticky ="false"
+      :showSelect ="'default'"
       @row-click="indexRow"
-      @sort-value="sortColumn"
       @mouseHover ="showHoverCellData"
+      @select-result ="showSelected"
     >
-      <!-- <template #arrow-top="{active}">
-        <img src="./assets/img/arrow2.svg"
-          alt=""
-          :class="{ arrowStyle : active }"
-        >
-      </template>
-      <template #arrow-bottom="{active}">
-        <img src="./assets/img/arrow2.svg"
-        alt=""
-        :class="{ arrowStyle : active }"
-        >
-      </template> -->
-
       <!-- <template #header-calories-content="{header}" >
-        {{ header.displayName + '123' }}
+        {{ header.displayName + 'lkj' }}
       </template> -->
 
       <!-- <template #header-calories-content >
@@ -51,27 +38,22 @@
 </template>
 
 <script setup>
-import { reactive, ref } from 'vue'
+/* eslint-disable */
+import { reactive } from 'vue'
 import VTable from './components/VTable.vue'
-import { SORT } from './utils/consts'
 
 const columns = reactive([
   {
     displayName: 'Dessert (100g serving)',
-    displayValue: 'name',
-    sortable: true,
-    sortArrowBackground: '#f0f',
-    isShownSortableWindow: true
+    displayValue: 'name'
   },
   {
     displayName: 'Calories',
-    displayValue: 'calories',
-    sortable: true
+    displayValue: 'calories'
   },
   {
     displayName: 'Fat (g)',
-    displayValue: 'fat',
-    sortable: true
+    displayValue: 'fat'
   },
   {
     displayName: 'Carbs (g)',
@@ -83,14 +65,16 @@ const columns = reactive([
   },
   {
     displayName: 'Burger',
-    displayValue: 'burger'
+    displayValue: 'burger',
+    width: '300'
   },
   {
     displayName: 'Pizza',
-    displayValue: 'pizza'
+    displayValue: 'pizza',
+    width: '300'
   }
 ])
-const dessertsInitial = reactive([
+const desserts = reactive([
   {
     name: 'Frozen Yogurt',
     calories: 45,
@@ -126,7 +110,7 @@ const dessertsInitial = reactive([
     empty: ''
   },
   {
-    name: 'burgerssss',
+    name: '5555555555',
     calories: 392,
     fat: 0.2,
     carbs: 98,
@@ -161,28 +145,14 @@ const dessertsInitial = reactive([
   }
 ])
 
-const desserts = ref(dessertsInitial)
-
 const indexRow = rowData => {
   console.log(rowData)
 }
 const showHoverCellData = (cellData, e) => {
   console.log(cellData, e)
 }
-
-const sortBy = ref('')
-const sortColumn = (header, sortVal) => {
-  sortBy.value = header.displayValue
-  switch (sortVal) {
-    case SORT.DESC:
-      desserts.value = [...dessertsInitial].sort((a, b) => (a[sortBy.value] > b[sortBy.value]) ? 1 : ((b[sortBy.value] > a[sortBy.value]) ? -1 : 0)).reverse()
-      break
-    case SORT.ASC:
-      desserts.value = [...dessertsInitial].sort((a, b) => (a[sortBy.value] > b[sortBy.value]) ? 1 : ((b[sortBy.value] > a[sortBy.value]) ? -1 : 0))
-      break
-    default:
-      desserts.value = dessertsInitial
-  }
+const showSelected = array => {
+  console.log(array)
 }
 </script>
 
@@ -190,7 +160,7 @@ const sortColumn = (header, sortVal) => {
 * {
   box-sizing: border-box;
 }
-body, ul {
+body {
   margin: 0;
   padding: 0;
 }
@@ -200,8 +170,5 @@ body, ul {
   -moz-osx-font-smoothing: grayscale;
   text-align: center;
   color: #2c3e50;
-}
-.arrowStyle {
-  filter: invert(63%) sepia(69%) saturate(4207%) hue-rotate(87deg) brightness(111%) contrast(131%);
 }
 </style>

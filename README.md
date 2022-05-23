@@ -21,7 +21,7 @@ npm run lint
 ```
 ### Library installment
 ```
-1. In the project where you want to install the library. In command line type - npm i <..path to the folder with library>.
+1. In the project where you want to install the library. In command line type - npm i <...path to the folder with library>.
 
 2. In vue.config.js file in your project, you will need to add the fallowing code:
   const path = require('path')
@@ -157,6 +157,24 @@ Example:
   isShownSortableWindow: true
 }
 
+```
+### How to make arrow selection
+```
+There are three types of arrow selection. To choose the slection mode you need
+to add 'showSelect' prop and pass one of three string values:
+'default' - without any selection.
+'single' - selecting checkbox will appear in the beginning of each line.
+'multiple' - in adition to checkboxes in the beginning of each line, one checkbox
+will appear in the left top corner, which will give the possibility to mark all lines.
+Example:
+
+:showSelect ="'multiple'"
+
+To receive the result of chosen items, you need to apply to props an event 
+listener select-result.
+Example:
+
+@select-result="<name of your function>"
 ```
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).

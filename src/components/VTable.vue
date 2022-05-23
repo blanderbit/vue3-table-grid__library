@@ -9,7 +9,7 @@
         <div v-if="isLoaderSoft" >
           <div v-if="isLoader" class="vt-loader-soft">
             <slot name="loader-soft"> <!-- Slot which shows loader -->
-              <img :src="loader64" alt="">
+              <img src="../assets/img/loader.gif" alt="">
             </slot>
           </div>
         </div>
@@ -17,7 +17,7 @@
         <div v-if="isLoaderHard">
           <div v-if="isLoader" class="vt-loader-hard">
             <slot name="loader-hard"> <!-- Slot which shows loader -->
-              <img :src="loader64" alt="">
+              <img src="../assets/img/loader.gif" alt="">
             </slot>
           </div>
         </div>
@@ -26,49 +26,30 @@
       <table v-if="isTableVisible" class="vt-table">
         <thead :style="styleHeader"> <!-- Header block -->
           <tr>
+            <th v-if="showMultiple" class="vt-checkbox-cell">
+              <slot>
+                <VCheckbox
+                  id="mark-all"
+                  :checked="isMarkedAllCheckboxes"
+                  @checkbox-changed="selectAllCheckboxChanged"
+                />
+              </slot>
+            </th>
+            <th v-if="showSingle && !showMultiple"></th>
             <th
               v-for="(header, idx) in mainColumns"
               :key="idx"
               :class="header._options.class"
-              :style="{background: headerColor, ...header._options.style}"
+              :style="header._options.style"
             >
-              <div class="vt-header-cell-wrapper">
-                <slot
-                  :name="header._options.slotName"
-                  :header="header"
-                > <!-- Slot for transmiting users data to header's cell -->
-                  <span>
-                    {{ header.displayName }}
-                  </span>
-                </slot>
-
-                <div
-                  v-if="header.sortable"
-                  class="vt-select-button-block"
-                  @click="sortColumn(header)"
-                  :style="header._options.sortArrowStyle"
-                >
-                  <slot name="arrow-top" :active="header._options.arrowSortState === SORT.ASC">
-                    <img :src="sortUp64"
-                      alt=""
-                      class="arrow-top"
-                      :style="header._options.sortArrowStyle.arrowTop"
-                    >
-                  </slot>
-                  <slot name="arrow-bottom" :active="header._options.arrowSortState === SORT.DESC">
-                    <img
-                      :src="sortDown64"
-                      alt=""
-                      class="arrow-bottom"
-                      :style="header._options.sortArrowStyle.arrowBottom"
-                    >
-                  </slot>
-                  <VSortDropdown
-                    :header ="header"
-                    @dropdown-click="sortOption"
-                  />
-                </div>
-              </div>
+              <slot
+                :name="header._options.slotName"
+                :header="header"
+              > <!-- Slot for transmiting users data to header's cell -->
+                <span>
+                  {{ header.displayName }}
+                </span>
+              </slot>
             </th>
           </tr>
         </thead>
@@ -80,6 +61,15 @@
             @mouseover="rowHover(row, $event)"
             :style="bgStyle"
           > <!-- rowClick function emits index of the row on the top -->
+            <td v-if="showSingle || showMultiple" class="vt-checkbox-cell">
+              <slot>
+                <VCheckbox
+                  :id="rowIndex"
+                  :checked="isMarkedAllCheckboxes || rowSelectState[rowIndex]"
+                  @checkbox-changed="selectPrticularLine"
+                />
+              </slot>
+            </td>
             <td
               v-for="(header, idx) in mainColumns"
               :key="idx"
@@ -111,17 +101,14 @@
 </template>
 
 <script>
-import { computed, ref, onMounted } from 'vue'
-import VSortDropdown from '../components/VSortDropdown.vue'
-
+import { computed, onMounted, ref, reactive } from 'vue'
 import useLoader from '../utils/useLoader'
-import makeObjectFromEntries from '../utils/makeObjectFromEntries'
-import { sortDown64, loader64, sortUp64, SORT } from '../utils/consts'
+import VCheckbox from '../components/VCheckbox.vue'
 
 export default {
   name: 'main-table',
   components: {
-    VSortDropdown
+    VCheckbox
   },
   props: {
     dataSource: { // Here must be trasmited an array with objects for showing header
@@ -156,17 +143,14 @@ export default {
       type: Boolean,
       default: false
     },
-    headerColor: {
+    showSelect: {
       type: String,
-      default: '#F6F9FB'
-    },
-    sortArrowBackground: {
-      type: String,
-      default: '#A0B0B9'
+      default: 'default'
     }
   },
-  emits: ['mouseHover', 'sortValue'],
+  emits: ['rowClick', 'mouseHover', 'selectResult'],
   setup (props, ctx) {
+    /* eslint-disable */
     const mainColumns = computed(() => {
       return props.columns
             .filter((header) => header.displayValue && header.displayName)
@@ -186,90 +170,28 @@ export default {
                     borderRight : setRightBorder(item, idx, array),
                     width: `${item.width}px`,
                     'min-width': `${item.width}px`,
-                    left: item.fixed ? setLeftMargin() : '',
-                  },
-                  sortArrowStyle: {
-                    background: item.sortArrowBackground || '#A0B0B9',
-                    arrowTop: { 
-                      filter: sortArrowsState[idx] === SORT.ASC ? 
-                      'invert(90%) sepia(6%) saturate(102%) hue-rotate(171deg) brightness(108%) contrast(97%)' :
-                      'invert(10%) sepia(13%) saturate(4958%) hue-rotate(159deg) brightness(95%) contrast(102%)' 
-                    },
-                    arrowBottom: { 
-                      filter: sortArrowsState[idx] === SORT.DESC ? 
-                      'invert(90%) sepia(6%) saturate(102%) hue-rotate(171deg) brightness(108%) contrast(97%)' :
-                      'invert(10%) sepia(13%) saturate(4958%) hue-rotate(159deg) brightness(95%) contrast(102%)' 
-                    }
+                    left: item.fixed ? setLeftMargin() : ''
                   },
                   //creates name for slot
-                  slotName: `header-${item.displayValue}-content`,
-                  isOptionsVisible: item.isShownSortableWindow || false,
-                  isOptionsOpened: sortedState[idx],
-                  arrowSortState: sortArrowsState[idx]
+                  slotName: `header-${item.displayValue}-content`
                 }
               }
             })
     })
 
-    const sortedState = makeObjectFromEntries(props.columns, false)
-
-    const sortArrowsState = makeObjectFromEntries(props.columns, '')
-
-    const arrowValue = ref(SORT.DEF)
-    const isInitialSort = props.columns.filter(i => i.initialSort)
-    if (isInitialSort.length) {
-      arrowValue.value = isInitialSort[0].initialSort
-      getNumberOfSortDirection.value = isInitialSort[0].displayValue
-      const initialSortId = props.columns.map((item, idx) => {
-        if (item.initialSort) return idx
-        return ''
-      })
-      const id = initialSortId.join('')
-      sortArrowsState[id] = isInitialSort[0].initialSort
-    }
-
-    const sortColumn = (header) => {
-      const { id, _options, displayValue } = header
-      if (_options.isOptionsVisible) {
-        sortedState[id] = !_options.isOptionsOpened
-      } else {
-        ctx.emit('sortValue', header, getNumberOfSortDirection(displayValue, id))
-      }
-    }
-
-    function getNumberOfSortDirection (nameVal, id) {
-      if (getNumberOfSortDirection.value !== nameVal) {
-        for (const key in sortArrowsState) sortArrowsState[key] = SORT.DEF
-        getNumberOfSortDirection.value = nameVal
-        arrowValue.value = SORT.DESC
-        sortArrowsState[id] = SORT.DESC
-        return arrowValue.value
-      }
-      switch (arrowValue.value) {
-        case SORT.DEF: {
-          sortArrowsState[id] = SORT.DESC
-          arrowValue.value = SORT.DESC
-          return arrowValue.value
-        }
-        case SORT.DESC: {
-          arrowValue.value = SORT.ASC
-          sortArrowsState[id] = SORT.ASC
-          return arrowValue.value
-        }
-        case SORT.ASC: {
-          arrowValue.value = SORT.DEF
-          sortArrowsState[id] = SORT.DEF
-          return arrowValue.value
-        }
-      }
-    }
-    if (!isInitialSort.length) {
-      getNumberOfSortDirection.value = null
-    }
-
+    /* eslint-enable */
     const rows = computed(() => {
       return props.dataSource
     })
+
+    const showMultiple = computed(() => {
+      return props.showSelect === 'multiple'
+    })
+    const showSingle = computed(() => {
+      return props.showSelect === 'single' || props.showSelect === 'multiple'
+    })
+
+    const rowSelectState = reactive(Object.fromEntries(new Array(props.dataSource.length).fill('l').map((_, idx) => ([idx, false]))))
 
     const setRightBorder = (item, idx, array) => {
       if (lastFixedTableValue.value === item.displayValue) {
@@ -286,6 +208,7 @@ export default {
       return null
     })
     const setLeftMargin = () => {
+    /* eslint-disable */
       if (setLeftMargin.count === 0) {
         setLeftMargin.count++
         return '12px'
@@ -331,19 +254,34 @@ export default {
       }
       return {}
     })
-    const sortOption = (header, sortVal) => {
-      const { id } = header
-      for (const key in sortArrowsState) sortArrowsState[key] = ''
-      sortArrowsState[id] = sortVal
-      ctx.emit('sortValue', header, sortVal)
-    }
-
     onMounted(() => {
-      const isInitialSort = props.columns.filter((header) => header.initialSort)
-      if (isInitialSort.length) {
-        ctx.emit('sortValue', isInitialSort[0], isInitialSort[0].initialSort)
-      }
+      const table = document.querySelector('.vt-table')
+      if (!table) return
+
+      const applyFixedColumnsHook = mainColumns.value.some(item => item.fixed)
     })
+
+    const isMarkedAllCheckboxes = ref(false)
+    const selectAllCheckboxChanged = (val) => {
+      isMarkedAllCheckboxes.value = !val
+      if (!val) {
+        ctx.emit('selectResult', [...props.dataSource])
+      }
+      for (let key in rowSelectState) rowSelectState[key] = !val
+    }
+    const selectPrticularLine = (val, id) => {
+      isMarkedAllCheckboxes.value = false
+      rowSelectState[id] = !val
+      let arr = []
+      for (let key in rowSelectState) {
+        if (rowSelectState[key]) {
+          arr.push(props.dataSource[key])
+        }
+      }
+      if (arr.length) {
+        ctx.emit('selectResult', arr)
+      }
+    }
 
     return {
       mainColumns,
@@ -354,12 +292,12 @@ export default {
       bgStyle,
       styleTableWrapper,
       styleHeader,
-      sortColumn,
-      sortOption,
-      SORT,
-      sortDown64,
-      loader64,
-      sortUp64
+      isMarkedAllCheckboxes,
+      selectAllCheckboxChanged,
+      rowSelectState,
+      selectPrticularLine,
+      showMultiple,
+      showSingle
     }
   }
 }
@@ -376,6 +314,7 @@ $prefix: vt-;
     position: relative;
 
     .#{$prefix}table-wrapper {
+
       .#{$prefix}loader-soft {
         background: #efefef8a;
         position: absolute;
@@ -452,6 +391,10 @@ $prefix: vt-;
         }
         thead {
           tr {
+            background: #F6F9FB;
+            .#{$prefix}checkbox-cell {
+              border-right: 1px solid #EEF1F2;
+            }
             th {
               font-family: 'Inter';
               font-style: normal;
@@ -459,30 +402,15 @@ $prefix: vt-;
               font-size: 14px;
               line-height: 20px;
               color: #001F2A;
-              .#{$prefix}header-cell-wrapper {
-                display: flex;
-                .#{$prefix}select-button-block {
-                  user-select: none;
-                  margin-left: 4px;
-                  position: relative;
-                  width: 20px;
-                  height: 20px;
-                  border-radius: 6px;
-                  display: flex;
-                  justify-content: space-around;
-                  align-items: center;
-                  flex-direction: column;
-                  &:hover {
-                    cursor: pointer;
-                    background: #A0B0B9;
-                  }
-                }
-              }
+              background: #F6F9FB;
             }
           }
         }
         tbody {
           tr {
+            .#{$prefix}checkbox-cell {
+              border-right: 1px solid #EEF1F2;
+            }
             &:hover {
               background: var(--bg-color);
             }
