@@ -104,7 +104,6 @@
 import { computed, onMounted, ref, reactive } from 'vue'
 import useLoader from '../utils/useLoader'
 import VCheckbox from '../components/VCheckbox.vue'
-// import { useSetupFixedColumnsHook } from '../hooks/use-setup-fixed-columns.hook'
 
 export default {
   name: 'main-table',
@@ -146,10 +145,10 @@ export default {
     },
     showSelect: {
       type: String,
-      default: 'default' // multiple, single
+      default: 'default'
     }
   },
-  emits: ['rowClick', 'mouseHover', 'multipleSelectMod', 'onceSelectMod'],
+  emits: ['rowClick', 'mouseHover', 'selectResult'],
   setup (props, ctx) {
     /* eslint-disable */
     const mainColumns = computed(() => {
@@ -185,7 +184,6 @@ export default {
       return props.dataSource
     })
 
-    // multiple, single
     const showMultiple = computed(() => {
       return props.showSelect === 'multiple'
     })
@@ -194,7 +192,6 @@ export default {
     })
 
     const rowSelectState = reactive(Object.fromEntries(new Array(props.dataSource.length).fill('l').map((_, idx) => ([idx, false]))))
-    // console.log(rowSelectState)
 
     const setRightBorder = (item, idx, array) => {
       if (lastFixedTableValue.value === item.displayValue) {
@@ -262,17 +259,13 @@ export default {
       if (!table) return
 
       const applyFixedColumnsHook = mainColumns.value.some(item => item.fixed)
-
-      if (applyFixedColumnsHook) {
-        // useSetupFixedColumnsHook(table)
-      }
     })
 
     const isMarkedAllCheckboxes = ref(false)
     const selectAllCheckboxChanged = (val) => {
       isMarkedAllCheckboxes.value = !val
       if (!val) {
-        ctx.emit('multipleSelectMod', [...props.dataSource])
+        ctx.emit('selectResult', [...props.dataSource])
       }
       for (let key in rowSelectState) rowSelectState[key] = !val
     }
@@ -286,7 +279,7 @@ export default {
         }
       }
       if (arr.length) {
-        ctx.emit('onceSelectMod', arr)
+        ctx.emit('selectResult', arr)
       }
     }
 
@@ -321,8 +314,6 @@ $prefix: vt-;
     position: relative;
 
     .#{$prefix}table-wrapper {
-      /* width: 400px;
-      overflow-x: scroll; */
 
       .#{$prefix}loader-soft {
         background: #efefef8a;
@@ -356,7 +347,6 @@ $prefix: vt-;
             &--fixed-side {
               position: absolute;
               left: 0;
-              /* background: rgb(153, 215, 153); */
               span {
                 width: 100px;
                 display: block;
@@ -372,12 +362,10 @@ $prefix: vt-;
             border-bottom-width: 1px;
             padding: 0;
             border-left-width: 1px;
-            /* background: rgb(153, 215, 153); */
             span {
               display: block;
               width: 100px;
               max-width: 100px;
-              /* padding: 10px; */
               box-sizing: border-box;
             }
           }

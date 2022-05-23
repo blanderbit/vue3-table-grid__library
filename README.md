@@ -118,6 +118,12 @@ will appear in the left top corner, which will give the possibility to mark all 
 Example:
 
 :showSelect ="'multiple'"
+
+To receive the result of chosen items, you need to apply to props an event 
+listener select-result.
+Example:
+
+@select-result="<name of your function>"
 ```
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).

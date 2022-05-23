@@ -11,10 +11,8 @@
       :showSelect ="'default'"
       @row-click="indexRow"
       @mouseHover ="showHoverCellData"
-      @multiple-select-mod ="multipleChooseArray"
-      @once-select-mod ="onceSelect"
+      @select-result ="showSelected"
     >
-      <!-- multiple, single -->
       <!-- <template #header-calories-content="{header}" >
         {{ header.displayName + 'lkj' }}
       </template> -->
@@ -153,10 +151,7 @@ const desserts = reactive([
 // const showHoverCellData = (cellData, e) => {
 //   console.log(cellData, e)
 // }
-const multipleChooseArray = array => {
-  console.log(array)
-}
-const onceSelect = array => {
+const showSelected = array => {
   console.log(array)
 }
 </script>
