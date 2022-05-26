@@ -139,7 +139,8 @@ import { sortDown64, loader64, sortUp64, SORT } from '../utils/consts'
 export default {
   name: 'main-table',
   components: {
-    VCheckbox
+    VCheckbox,
+    VSortDropdown
   },
   props: {
     dataSource: { // Here must be trasmited an array with objects for showing header
