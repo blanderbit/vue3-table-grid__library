@@ -47,7 +47,10 @@ import { SORT } from './utils/consts'
 const columns = reactive([
   {
     displayName: 'Dessert (100g serving)',
-    displayValue: 'name'
+    displayValue: 'name',
+    sortable: true,
+    sortArrowBackground: '#f0f',
+    isShownSortableWindow: true
   },
   {
     displayName: 'Calories',
@@ -56,7 +59,8 @@ const columns = reactive([
   },
   {
     displayName: 'Fat (g)',
-    displayValue: 'fat'
+    displayValue: 'fat',
+    sortable: true
   },
   {
     displayName: 'Carbs (g)',
@@ -68,16 +72,14 @@ const columns = reactive([
   },
   {
     displayName: 'Burger',
-    displayValue: 'burger',
-    width: '300'
+    displayValue: 'burger'
   },
   {
     displayName: 'Pizza',
-    displayValue: 'pizza',
-    width: '300'
+    displayValue: 'pizza'
   }
 ])
-const desserts = reactive([
+const dessertsInitial = reactive([
   {
     name: 'Frozen Yogurt',
     calories: 45,
@@ -113,7 +115,7 @@ const desserts = reactive([
     empty: ''
   },
   {
-    name: '5555555555',
+    name: 'burgerssss',
     calories: 392,
     fat: 0.2,
     carbs: 98,
@@ -148,6 +150,8 @@ const desserts = reactive([
   }
 ])
 
+const desserts = ref(dessertsInitial)
+
 const indexRow = rowData => {
   console.log(rowData)
 }
@@ -177,7 +181,7 @@ const sortColumn = (header, sortVal) => {
 * {
   box-sizing: border-box;
 }
-body {
+body, ul {
   margin: 0;
   padding: 0;
 }
