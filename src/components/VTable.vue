@@ -132,6 +132,10 @@ import { computed, onMounted, ref, reactive } from 'vue'
 import useLoader from '../utils/useLoader'
 import VCheckbox from '../components/VCheckbox.vue'
 
+import VSortDropdown from '../components/VSortDropdown.vue'
+import makeObjectFromEntries from '../utils/makeObjectFromEntries'
+import { sortDown64, loader64, sortUp64, SORT } from '../utils/consts'
+
 export default {
   name: 'main-table',
   components: {
@@ -324,7 +328,8 @@ export default {
       rowSelectState,
       selectPrticularLine,
       showMultiple,
-      showSingle
+      showSingle,
+      VSortDropdown
     }
   }
 }
