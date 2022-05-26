@@ -415,7 +415,10 @@ export default {
       selectPrticularLine,
       showMultiple,
       showSingle,
-      sortOption
+      sortOption,
+      sortDown64,
+      loader64,
+      sortUp64
     }
   }
 }
