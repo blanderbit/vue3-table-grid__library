@@ -130,7 +130,7 @@
 </template>
 
 <script>
-import { computed, onMounted, ref, reactive } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import useLoader from '../utils/useLoader'
 import VCheckbox from '../components/VCheckbox.vue'
 
@@ -305,7 +305,7 @@ export default {
       return props.showSelect === 'single' || props.showSelect === 'multiple'
     })
 
-    const rowSelectState = reactive(Object.fromEntries(new Array(props.dataSource.length).fill('l').map((_, idx) => ([idx, false]))))
+    const rowSelectState = makeObjectFromEntries(props.columns, false)
 
     const setRightBorder = (item, idx, array) => {
       if (lastFixedTableValue.value === item.displayValue) {
