@@ -182,7 +182,7 @@ export default {
       default: 'default'
     }
   },
-  emits: ['rowClick', 'mouseHover', 'selectResult'],
+  emits: ['rowClick', 'sortValue', 'mouseHover', 'selectResult'],
   setup (props, ctx) {
     /* eslint-disable */
     const mainColumns = computed(() => {
@@ -360,12 +360,6 @@ export default {
       }
       return {}
     })
-    onMounted(() => {
-      const table = document.querySelector('.vt-table')
-      if (!table) return
-
-      const applyFixedColumnsHook = mainColumns.value.some(item => item.fixed)
-    })
 
     const isMarkedAllCheckboxes = ref(false)
     const selectAllCheckboxChanged = (val) => {
@@ -389,6 +383,23 @@ export default {
       }
     }
 
+    const sortOption = (header, sortVal) => {
+      const { id } = header
+      for (const key in sortArrowsState) sortArrowsState[key] = ''
+      sortArrowsState[id] = sortVal
+      ctx.emit('sortValue', header, sortVal)
+    }
+
+    onMounted(() => {
+      const table = document.querySelector('.vt-table')
+      if (!table) return
+
+      const isInitialSort = props.columns.filter((header) => header.initialSort)
+      if (isInitialSort.length) {
+        ctx.emit('sortValue', isInitialSort[0], isInitialSort[0].initialSort)
+      }
+    })
+
     return {
       mainColumns,
       rows,
@@ -404,7 +415,7 @@ export default {
       selectPrticularLine,
       showMultiple,
       showSingle,
-      VSortDropdown
+      sortOption
     }
   }
 }
