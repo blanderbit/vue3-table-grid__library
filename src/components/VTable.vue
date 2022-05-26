@@ -177,6 +177,14 @@ export default {
       type: Boolean,
       default: false
     },
+    headerColor: {
+      type: String,
+      default: '#F6F9FB'
+    },
+    sortArrowBackground: {
+      type: String,
+      default: '#A0B0B9'
+    },
     showSelect: {
       type: String,
       default: 'default'
