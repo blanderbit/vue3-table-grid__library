@@ -206,8 +206,24 @@ export default {
                     'min-width': `${item.width}px`,
                     left: item.fixed ? setLeftMargin() : ''
                   },
+                  sortArrowStyle: {
+                    background: item.sortArrowBackground || '#A0B0B9',
+                    arrowTop: { 
+                      filter: sortArrowsState[idx] === SORT.ASC ? 
+                      'invert(90%) sepia(6%) saturate(102%) hue-rotate(171deg) brightness(108%) contrast(97%)' :
+                      'invert(10%) sepia(13%) saturate(4958%) hue-rotate(159deg) brightness(95%) contrast(102%)' 
+                    },
+                    arrowBottom: { 
+                      filter: sortArrowsState[idx] === SORT.DESC ? 
+                      'invert(90%) sepia(6%) saturate(102%) hue-rotate(171deg) brightness(108%) contrast(97%)' :
+                      'invert(10%) sepia(13%) saturate(4958%) hue-rotate(159deg) brightness(95%) contrast(102%)' 
+                    }
+                  },
                   //creates name for slot
-                  slotName: `header-${item.displayValue}-content`
+                  slotName: `header-${item.displayValue}-content`,
+                  isOptionsVisible: item.isShownSortableWindow || false,
+                  isOptionsOpened: sortedState[idx],
+                  arrowSortState: sortArrowsState[idx]
                 }
               }
             })
