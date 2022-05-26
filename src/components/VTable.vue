@@ -42,40 +42,42 @@
               :class="header._options.class"
               :style="header._options.style"
             >
-              <slot
-                :name="header._options.slotName"
-                :header="header"
-              > <!-- Slot for transmiting users data to header's cell -->
-                <span>
-                  {{ header.displayName }}
-                </span>
-              </slot>
+              <div class="vt-header-cell-wrapper">
+                <slot
+                  :name="header._options.slotName"
+                  :header="header"
+                > <!-- Slot for transmiting users data to header's cell -->
+                  <span>
+                    {{ header.displayName }}
+                  </span>
+                </slot>
 
-              <div
-                v-if="header.sortable"
-                class="vt-select-button-block"
-                @click="sortColumn(header)"
-                :style="header._options.sortArrowStyle"
-              >
-                <slot name="arrow-top" :active="header._options.arrowSortState === SORT.ASC">
-                  <img :src="sortUp64"
-                    alt=""
-                    class="arrow-top"
-                    :style="header._options.sortArrowStyle.arrowTop"
-                  >
-                </slot>
-                <slot name="arrow-bottom" :active="header._options.arrowSortState === SORT.DESC">
-                  <img
-                    :src="sortDown64"
-                    alt=""
-                    class="arrow-bottom"
-                    :style="header._options.sortArrowStyle.arrowBottom"
-                  >
-                </slot>
-                <VSortDropdown
-                  :header ="header"
-                  @dropdown-click="sortOption"
-                />
+                <div
+                  v-if="header.sortable"
+                  class="vt-select-button-block"
+                  @click="sortColumn(header)"
+                  :style="header._options.sortArrowStyle"
+                >
+                  <slot name="arrow-top" :active="header._options.arrowSortState === SORT.ASC">
+                    <img :src="sortUp64"
+                      alt=""
+                      class="arrow-top"
+                      :style="header._options.sortArrowStyle.arrowTop"
+                    >
+                  </slot>
+                  <slot name="arrow-bottom" :active="header._options.arrowSortState === SORT.DESC">
+                    <img
+                      :src="sortDown64"
+                      alt=""
+                      class="arrow-bottom"
+                      :style="header._options.sortArrowStyle.arrowBottom"
+                    >
+                  </slot>
+                  <VSortDropdown
+                    :header ="header"
+                    @dropdown-click="sortOption"
+                  />
+                </div>
               </div>
             </th>
           </tr>
@@ -424,10 +426,6 @@ $prefix: vt-;
         }
         thead {
           tr {
-            background: #F6F9FB;
-            .#{$prefix}checkbox-cell {
-              border-right: 1px solid #EEF1F2;
-            }
             th {
               font-family: 'Inter';
               font-style: normal;
@@ -435,7 +433,25 @@ $prefix: vt-;
               font-size: 14px;
               line-height: 20px;
               color: #001F2A;
-              background: #F6F9FB;
+              .#{$prefix}header-cell-wrapper {
+                display: flex;
+                .#{$prefix}select-button-block {
+                  user-select: none;
+                  margin-left: 4px;
+                  position: relative;
+                  width: 20px;
+                  height: 20px;
+                  border-radius: 6px;
+                  display: flex;
+                  justify-content: space-around;
+                  align-items: center;
+                  flex-direction: column;
+                  &:hover {
+                    cursor: pointer;
+                    background: #A0B0B9;
+                  }
+                }
+              }
             }
           }
         }
