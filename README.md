@@ -132,6 +132,15 @@ Example:
   sortable: true
 }
 
+There is also a possibility to set an initial sorting value for a column. You need
+to add a value 'initialSort' to the object of the column you want to sort with
+the value of sorting 'asc' or 'desc'
+Example:
+{
+  displayName: 'column N',
+  displayValue: 'fat',
+  initialSort: 'desc'
+}
 ```
 ### How to change a background for sorting arrows
 ```

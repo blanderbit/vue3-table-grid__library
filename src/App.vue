@@ -8,7 +8,7 @@
       :isLoaderHard ="false"
       :tableHeight ="''"
       :isHeaderSticky ="false"
-      :showSelect ="'default'"
+      :showSelect ="'multiple'"
       @row-click ="indexRow"
       @mouse-hover ="showHoverCellData"
       @sort-value = "sortColumn"
