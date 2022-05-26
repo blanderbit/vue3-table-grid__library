@@ -50,6 +50,33 @@
                   {{ header.displayName }}
                 </span>
               </slot>
+
+              <div
+                v-if="header.sortable"
+                class="vt-select-button-block"
+                @click="sortColumn(header)"
+                :style="header._options.sortArrowStyle"
+              >
+                <slot name="arrow-top" :active="header._options.arrowSortState === SORT.ASC">
+                  <img :src="sortUp64"
+                    alt=""
+                    class="arrow-top"
+                    :style="header._options.sortArrowStyle.arrowTop"
+                  >
+                </slot>
+                <slot name="arrow-bottom" :active="header._options.arrowSortState === SORT.DESC">
+                  <img
+                    :src="sortDown64"
+                    alt=""
+                    class="arrow-bottom"
+                    :style="header._options.sortArrowStyle.arrowBottom"
+                  >
+                </slot>
+                <VSortDropdown
+                  :header ="header"
+                  @dropdown-click="sortOption"
+                />
+              </div>
             </th>
           </tr>
         </thead>
