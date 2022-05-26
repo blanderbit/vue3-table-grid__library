@@ -426,7 +426,9 @@ export default {
       sortOption,
       sortDown64,
       loader64,
-      sortUp64
+      sortUp64,
+      SORT,
+      sortColumn
     }
   }
 }
