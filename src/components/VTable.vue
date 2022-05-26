@@ -213,6 +213,62 @@ export default {
             })
     })
 
+    const sortedState = makeObjectFromEntries(props.columns, false)
+
+    const sortArrowsState = makeObjectFromEntries(props.columns, '')
+
+    const arrowValue = ref(SORT.DEF)
+    const isInitialSort = props.columns.filter(i => i.initialSort)
+    if (isInitialSort.length) {
+      arrowValue.value = isInitialSort[0].initialSort
+      getNumberOfSortDirection.value = isInitialSort[0].displayValue
+      const initialSortId = props.columns.map((item, idx) => {
+        if (item.initialSort) return idx
+        return ''
+      })
+      const id = initialSortId.join('')
+      sortArrowsState[id] = isInitialSort[0].initialSort
+    }
+
+    const sortColumn = (header) => {
+      const { id, _options, displayValue } = header
+      if (_options.isOptionsVisible) {
+        sortedState[id] = !_options.isOptionsOpened
+      } else {
+        ctx.emit('sortValue', header, getNumberOfSortDirection(displayValue, id))
+      }
+    }
+
+    function getNumberOfSortDirection (nameVal, id) {
+      if (getNumberOfSortDirection.value !== nameVal) {
+        for (const key in sortArrowsState) sortArrowsState[key] = SORT.DEF
+        getNumberOfSortDirection.value = nameVal
+        arrowValue.value = SORT.DESC
+        sortArrowsState[id] = SORT.DESC
+        return arrowValue.value
+      }
+      switch (arrowValue.value) {
+        case SORT.DEF: {
+          sortArrowsState[id] = SORT.DESC
+          arrowValue.value = SORT.DESC
+          return arrowValue.value
+        }
+        case SORT.DESC: {
+          arrowValue.value = SORT.ASC
+          sortArrowsState[id] = SORT.ASC
+          return arrowValue.value
+        }
+        case SORT.ASC: {
+          arrowValue.value = SORT.DEF
+          sortArrowsState[id] = SORT.DEF
+          return arrowValue.value
+        }
+      }
+    }
+    if (!isInitialSort.length) {
+      getNumberOfSortDirection.value = null
+    }
+
     /* eslint-enable */
     const rows = computed(() => {
       return props.dataSource
