@@ -108,6 +108,21 @@ Example:
   function showHoverCellData (objectCell, event) {}
 
 ```
+### How to get data on mouse click
+```
+You can get the data of the row you click. For this, add to props
+'@row-click' listener. The listener will triger your function. The 
+function will receive as an arguments the object of the table row.
+Example:
+
+  <VTable
+    @row-click ="indexRow"
+  >
+  </VTable>
+
+  function indexRow (rowData) {}
+
+```
 ### How to add your color on row hover
 ```
 In order to apply your custom color to row hover, you need to pass to the
@@ -190,62 +205,31 @@ Example:
 ]
 
 ```
-
-
-
-
-
-
-
-
-
-
-
-### How to apply custom arrows for sorting columns
-```
-Apply two templates with names: #arrow-top, #arrow-bottom. In each 
-template put img tag of the arrow. Receiving "active" prop, you can 
-apply your own class to your img tag.
-Example:
-
-<template #arrow-top="{active}">
-  <img src="arrow.svg"
-    alt=""
-    :class="{ arrowStyle : active }"
-  >
-</template>
-```
 ### How to make a column sortable
 ```
 To make column sortable you need to add a key 'sortable' with a boolean
  value to the object of a column.
 Example:
-{
-  displayName: 'column N',
-  displayValue: 'fat',
-  sortable: true
-}
+[
+  {
+    displayName: 'column N',
+    displayValue: 'fat',
+    sortable: true
+  }
+]
 
 There is also a possibility to set an initial sorting value for a column. 
-You need to add a value 'initialSort' to the object of the column you 
+You need to add a property 'initialSort' to the object of the column you 
 want to sort with the value of sorting 'asc' or 'desc'
 Example:
-{
-  displayName: 'column N',
-  displayValue: 'fat',
-  initialSort: 'desc'
-}
-```
-### How to change a background for sorting arrows
-```
-You need to add a key 'sortArrowBackground' to the object of needed column, 
-with the value of the color.
-Example:
-{
-  displayName: 'column N',
-  displayValue: 'fat',
-  sortArrowBackground: '#f0f'
-}
+
+[
+  {
+    displayName: 'column N',
+    displayValue: 'fat',
+    initialSort: 'desc'
+  }
+]
 
 ```
 ### How to show sortable window
@@ -254,11 +238,49 @@ On the sort button can be called a window with options, to choose wich kind
 of sorting method you need. To activate this window you need to pass a 
 boolean value into a 'isShownSortableWindow' key in the object of a column.
 Example:
-{
-  displayName: 'column N',
-  displayValue: 'fat',
-  isShownSortableWindow: true
-}
+
+[
+  {
+    displayName: 'column N',
+    displayValue: 'fat',
+    isShownSortableWindow: true
+  }
+]
+
+```
+### How to apply custom arrows for sorting columns
+```
+Make two templates with names: #arrow-top, #arrow-bottom. In each 
+template put 'img' tag of the arrow. Receiving "active" prop, you can 
+apply your own class to your 'img' tag.
+Example:
+
+<template #arrow-top="{active}">
+  <img src="arrow-top.svg"
+    alt=""
+    :class="{ arrowStyle : active }"
+  >
+</template>
+<template #arrow-bottom="{active}">
+  <img src="arrow-bottom.svg"
+    alt=""
+    :class="{ arrowStyle : active }"
+  >
+</template>
+```
+### How to change a background for sorting arrows
+```
+You need to add a key 'sortArrowBackground' to the object of needed column, 
+with the string value of the color you need.
+Example:
+
+[
+  {
+    displayName: 'column N',
+    displayValue: 'fat',
+    sortArrowBackground: '#f0f'
+  }
+]
 
 ```
 ### How to make arrow selection
@@ -272,13 +294,18 @@ checkbox will appear in the left top corner, which will give the possibility
 to mark all lines.
 Example:
 
-:showSelect ="'multiple'"
+  <VTable
+    :showSelect ="single"
+  >
+  </VTable>
 
-To receive the result of chosen items, you need to apply to props an event 
-listener select-result.
+To receive the result, you need to apply to props an event listener 
+'select-result'.
 Example:
 
-@select-result="<name of your function>"
+  @select-result="showSelected"
+
+  function showSelected (value) {}
 ```
 ### Customize configuration
 See [Configuration Reference](https://cli.vuejs.org/config/).

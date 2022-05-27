@@ -47,16 +47,18 @@ import { SORT } from './utils/consts'
 const columns = reactive([
   {
     displayName: 'Dessert (100g serving)',
-    displayValue: 'name'
+    displayValue: 'name',
+    initialSort: ''
   },
   {
     displayName: 'Calories',
     displayValue: 'calories',
-    width: '300'
+    sortable: true
   },
   {
     displayName: 'Fat (g)',
     displayValue: 'fat',
+    sortable: true
   },
   {
     displayName: 'Carbs (g)',
@@ -75,7 +77,7 @@ const columns = reactive([
     displayValue: 'pizza'
   }
 ])
-const dessertsInitial = reactive([
+const desserts = reactive([
   {
     name: 'Frozen Yogurt',
     calories: 45,
@@ -146,8 +148,6 @@ const dessertsInitial = reactive([
   }
 ])
 
-const desserts = ref(dessertsInitial)
-
 const indexRow = rowData => {
   console.log(rowData)
 }
@@ -157,19 +157,8 @@ const showHoverCellData = (cellData, e) => {
 const showSelected = array => {
   console.log(array)
 }
-const sortBy = ref('')
 const sortColumn = (header, sortVal) => {
-  sortBy.value = header.displayValue
-  switch (sortVal) {
-    case SORT.DESC:
-      desserts.value = [...dessertsInitial].sort((a, b) => (a[sortBy.value] > b[sortBy.value]) ? 1 : ((b[sortBy.value] > a[sortBy.value]) ? -1 : 0)).reverse()
-      break
-    case SORT.ASC:
-      desserts.value = [...dessertsInitial].sort((a, b) => (a[sortBy.value] > b[sortBy.value]) ? 1 : ((b[sortBy.value] > a[sortBy.value]) ? -1 : 0))
-      break
-    default:
-      desserts.value = dessertsInitial
-  }
+  console.log(header, sortVal)
 }
 </script>
 

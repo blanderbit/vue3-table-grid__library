@@ -130,7 +130,7 @@
 </template>
 
 <script>
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import useLoader from '../utils/useLoader'
 import VCheckbox from '../components/VCheckbox.vue'
 
@@ -229,7 +229,7 @@ export default {
                   },
                   //creates name for slot
                   slotName: `header-${item.displayValue}-content`,
-                  isOptionsVisible: item.isShownSortableWindow || false,
+                  isOptionsVisible: item.isShownSortableWindow,
                   isOptionsOpened: sortedState[idx],
                   arrowSortState: sortArrowsState[idx]
                 }
@@ -254,17 +254,37 @@ export default {
       sortArrowsState[id] = isInitialSort[0].initialSort
     }
 
+    const sortBy = ref('')
+    const sortObject = (header, sortVal) => {
+      console.log('sortObject', header, sortVal)
+      sortBy.value = header.displayValue
+      switch (sortVal) {
+        case SORT.DESC:
+          rowsPreVariable.value = [...rowsPreVariable.value].sort((a, b) => (a[sortBy.value] > b[sortBy.value]) ? 1 : ((b[sortBy.value] > a[sortBy.value]) ? -1 : 0)).reverse()
+          break
+        case SORT.ASC:
+          rowsPreVariable.value = [...rowsPreVariable.value].sort((a, b) => (a[sortBy.value] > b[sortBy.value]) ? 1 : ((b[sortBy.value] > a[sortBy.value]) ? -1 : 0))
+          break
+        default:
+          rowsPreVariable.value = props.dataSource
+      }
+      ctx.emit('sortValue', header, sortVal)
+    }
+
     const sortColumn = (header) => {
       const { id, _options, displayValue } = header
       if (_options.isOptionsVisible) {
         sortedState[id] = !_options.isOptionsOpened
       } else {
-        ctx.emit('sortValue', header, getNumberOfSortDirection(displayValue, id))
+        console.log('sortColumn')
+        sortObject(header, getNumberOfSortDirection(displayValue, id))
       }
     }
 
     function getNumberOfSortDirection (nameVal, id) {
+      console.log('getNumberOfSortDirection', nameVal, id)
       if (getNumberOfSortDirection.value !== nameVal) {
+        console.log(getNumberOfSortDirection.value)
         for (const key in sortArrowsState) sortArrowsState[key] = SORT.DEF
         getNumberOfSortDirection.value = nameVal
         arrowValue.value = SORT.DESC
@@ -294,8 +314,12 @@ export default {
     }
 
     /* eslint-enable */
+    const rowsPreVariable = ref(props.dataSource)
+    watch(() => props.dataSource, () => {
+      rowsPreVariable.value = props.dataSource
+    })
     const rows = computed(() => {
-      return props.dataSource
+      return rowsPreVariable.value
     })
 
     const showMultiple = computed(() => {
@@ -336,7 +360,7 @@ export default {
     })
 
     const isTableVisible = computed(() => {
-      return props.dataSource.length && props.columns.length
+      return rowsPreVariable.value.length && props.columns.length
     })
     const rowHover = (rowData, hoverEvent) => {
       ctx.emit('hoverRow', rowData, hoverEvent)
@@ -377,7 +401,7 @@ export default {
     const selectAllCheckboxChanged = (val) => {
       isMarkedAllCheckboxes.value = !val
       if (!val) {
-        ctx.emit('selectResult', [...props.dataSource])
+        ctx.emit('selectResult', [...rowsPreVariable.value])
       }
       for (let key in rowSelectState) rowSelectState[key] = !val
     }
@@ -387,7 +411,7 @@ export default {
       let arr = []
       for (let key in rowSelectState) {
         if (rowSelectState[key]) {
-          arr.push(props.dataSource[key])
+          arr.push(rowsPreVariable.value[key])
         }
       }
       if (arr.length) {
@@ -399,7 +423,7 @@ export default {
       const { id } = header
       for (const key in sortArrowsState) sortArrowsState[key] = ''
       sortArrowsState[id] = sortVal
-      ctx.emit('sortValue', header, sortVal)
+      sortObject(header, sortVal)
     }
 
     onMounted(() => {
@@ -408,7 +432,7 @@ export default {
 
       const isInitialSort = props.columns.filter((header) => header.initialSort)
       if (isInitialSort.length) {
-        ctx.emit('sortValue', isInitialSort[0], isInitialSort[0].initialSort)
+        sortObject(isInitialSort[0], isInitialSort[0].initialSort)
       }
     })
 
