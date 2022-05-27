@@ -9,8 +9,9 @@
       :tableHeight ="''"
       :isHeaderSticky ="false"
       :showSelect ="'default'"
-      @row-click="indexRow"
-      @mouseHover ="showHoverCellData"
+      @row-click ="indexRow"
+      @hover-row ="showHoverCellData"
+      @sort-value = "sortColumn"
       @select-result ="showSelected"
     >
       <!-- <template #header-calories-content="{header}" >
@@ -39,21 +40,25 @@
 
 <script setup>
 /* eslint-disable */
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import VTable from './components/VTable.vue'
+import { SORT } from './utils/consts'
 
 const columns = reactive([
   {
     displayName: 'Dessert (100g serving)',
-    displayValue: 'name'
+    displayValue: 'name',
+    initialSort: ''
   },
   {
     displayName: 'Calories',
-    displayValue: 'calories'
+    displayValue: 'calories',
+    sortable: true
   },
   {
     displayName: 'Fat (g)',
-    displayValue: 'fat'
+    displayValue: 'fat',
+    sortable: true
   },
   {
     displayName: 'Carbs (g)',
@@ -65,13 +70,11 @@ const columns = reactive([
   },
   {
     displayName: 'Burger',
-    displayValue: 'burger',
-    width: '300'
+    displayValue: 'burger'
   },
   {
     displayName: 'Pizza',
-    displayValue: 'pizza',
-    width: '300'
+    displayValue: 'pizza'
   }
 ])
 const desserts = reactive([
@@ -110,7 +113,7 @@ const desserts = reactive([
     empty: ''
   },
   {
-    name: '5555555555',
+    name: 'burgerssss',
     calories: 392,
     fat: 0.2,
     carbs: 98,
@@ -154,13 +157,16 @@ const showHoverCellData = (cellData, e) => {
 const showSelected = array => {
   console.log(array)
 }
+const sortColumn = (header, sortVal) => {
+  console.log(header, sortVal)
+}
 </script>
 
 <style lang="scss">
 * {
   box-sizing: border-box;
 }
-body {
+body, ul {
   margin: 0;
   padding: 0;
 }

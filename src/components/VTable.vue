@@ -42,14 +42,43 @@
               :class="header._options.class"
               :style="header._options.style"
             >
-              <slot
-                :name="header._options.slotName"
-                :header="header"
-              > <!-- Slot for transmiting users data to header's cell -->
-                <span>
-                  {{ header.displayName }}
-                </span>
-              </slot>
+              <div class="vt-header-cell-wrapper">
+                <slot
+                  :name="header._options.slotName"
+                  :header="header"
+                > <!-- Slot for transmiting users data to header's cell -->
+                  <span>
+                    {{ header.displayName }}
+                  </span>
+                </slot>
+
+                <div
+                  v-if="header.sortable"
+                  class="vt-select-button-block"
+                  @click="sortColumn(header)"
+                  :style="header._options.sortArrowStyle"
+                >
+                  <slot name="arrow-top" :active="header._options.arrowSortState === SORT.ASC">
+                    <img :src="sortUp64"
+                      alt=""
+                      class="arrow-top"
+                      :style="header._options.sortArrowStyle.arrowTop"
+                    >
+                  </slot>
+                  <slot name="arrow-bottom" :active="header._options.arrowSortState === SORT.DESC">
+                    <img
+                      :src="sortDown64"
+                      alt=""
+                      class="arrow-bottom"
+                      :style="header._options.sortArrowStyle.arrowBottom"
+                    >
+                  </slot>
+                  <VSortDropdown
+                    :header ="header"
+                    @dropdown-click="sortOption"
+                  />
+                </div>
+              </div>
             </th>
           </tr>
         </thead>
@@ -101,14 +130,19 @@
 </template>
 
 <script>
-import { computed, onMounted, ref, reactive } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import useLoader from '../utils/useLoader'
 import VCheckbox from '../components/VCheckbox.vue'
+
+import VSortDropdown from '../components/VSortDropdown.vue'
+import makeObjectFromEntries from '../utils/makeObjectFromEntries'
+import { sortDown64, loader64, sortUp64, SORT } from '../utils/consts'
 
 export default {
   name: 'main-table',
   components: {
-    VCheckbox
+    VCheckbox,
+    VSortDropdown
   },
   props: {
     dataSource: { // Here must be trasmited an array with objects for showing header
@@ -119,36 +153,44 @@ export default {
       type: Array,
       default: () => []
     },
-    isLoading: { // This prop switch off/on loader
+    isLoading: { // switch off/on loader
       type: Boolean,
       default: true
     },
-    isLoaderSoft: { // This prop switch off/on soft loader
+    isLoaderSoft: { // switch off/on soft loader
       type: Boolean,
       default: true
     },
-    isLoaderHard: { // This prop switch off/on hard loader
+    isLoaderHard: { // switch off/on hard loader
       type: Boolean,
       default: false
     },
-    backgroundColor: {
+    backgroundColor: { // applies a custom color to the row on hover
       type: String,
       default: '#E5FDFD'
     },
-    tableHeight: {
+    tableHeight: { // to apply certain heigh for a table
       type: String,
       default: ''
     },
-    isHeaderSticky: {
+    isHeaderSticky: { // makes header sticky
       type: Boolean,
       default: false
+    },
+    headerColor: { // applies a custom color to the header
+      type: String,
+      default: '#F6F9FB'
+    },
+    sortArrowBackground: {
+      type: String,
+      default: '#A0B0B9'
     },
     showSelect: {
       type: String,
       default: 'default'
     }
   },
-  emits: ['rowClick', 'mouseHover', 'selectResult'],
+  emits: ['rowClick', 'sortValue', 'hoverRow', 'selectResult'],
   setup (props, ctx) {
     /* eslint-disable */
     const mainColumns = computed(() => {
@@ -172,16 +214,112 @@ export default {
                     'min-width': `${item.width}px`,
                     left: item.fixed ? setLeftMargin() : ''
                   },
+                  sortArrowStyle: {
+                    background: item.sortArrowBackground || '#A0B0B9',
+                    arrowTop: { 
+                      filter: sortArrowsState[idx] === SORT.ASC ? 
+                      'invert(90%) sepia(6%) saturate(102%) hue-rotate(171deg) brightness(108%) contrast(97%)' :
+                      'invert(10%) sepia(13%) saturate(4958%) hue-rotate(159deg) brightness(95%) contrast(102%)' 
+                    },
+                    arrowBottom: { 
+                      filter: sortArrowsState[idx] === SORT.DESC ? 
+                      'invert(90%) sepia(6%) saturate(102%) hue-rotate(171deg) brightness(108%) contrast(97%)' :
+                      'invert(10%) sepia(13%) saturate(4958%) hue-rotate(159deg) brightness(95%) contrast(102%)' 
+                    }
+                  },
                   //creates name for slot
-                  slotName: `header-${item.displayValue}-content`
+                  slotName: `header-${item.displayValue}-content`,
+                  isOptionsVisible: item.isShownSortableWindow,
+                  isOptionsOpened: sortedState[idx],
+                  arrowSortState: sortArrowsState[idx]
                 }
               }
             })
     })
 
+    const sortedState = makeObjectFromEntries(props.columns, false)
+
+    const sortArrowsState = makeObjectFromEntries(props.columns, '')
+
+    const arrowValue = ref(SORT.DEF)
+    const isInitialSort = props.columns.filter(i => i.initialSort)
+    if (isInitialSort.length) {
+      arrowValue.value = isInitialSort[0].initialSort
+      getNumberOfSortDirection.value = isInitialSort[0].displayValue
+      const initialSortId = props.columns.map((item, idx) => {
+        if (item.initialSort) return idx
+        return ''
+      })
+      const id = initialSortId.join('')
+      sortArrowsState[id] = isInitialSort[0].initialSort
+    }
+
+    const sortBy = ref('')
+    const sortObject = (header, sortVal) => {
+      console.log('sortObject', header, sortVal)
+      sortBy.value = header.displayValue
+      switch (sortVal) {
+        case SORT.DESC:
+          rowsPreVariable.value = [...rowsPreVariable.value].sort((a, b) => (a[sortBy.value] > b[sortBy.value]) ? 1 : ((b[sortBy.value] > a[sortBy.value]) ? -1 : 0)).reverse()
+          break
+        case SORT.ASC:
+          rowsPreVariable.value = [...rowsPreVariable.value].sort((a, b) => (a[sortBy.value] > b[sortBy.value]) ? 1 : ((b[sortBy.value] > a[sortBy.value]) ? -1 : 0))
+          break
+        default:
+          rowsPreVariable.value = props.dataSource
+      }
+      ctx.emit('sortValue', header, sortVal)
+    }
+
+    const sortColumn = (header) => {
+      const { id, _options, displayValue } = header
+      if (_options.isOptionsVisible) {
+        sortedState[id] = !_options.isOptionsOpened
+      } else {
+        console.log('sortColumn')
+        sortObject(header, getNumberOfSortDirection(displayValue, id))
+      }
+    }
+
+    function getNumberOfSortDirection (nameVal, id) {
+      console.log('getNumberOfSortDirection', nameVal, id)
+      if (getNumberOfSortDirection.value !== nameVal) {
+        console.log(getNumberOfSortDirection.value)
+        for (const key in sortArrowsState) sortArrowsState[key] = SORT.DEF
+        getNumberOfSortDirection.value = nameVal
+        arrowValue.value = SORT.DESC
+        sortArrowsState[id] = SORT.DESC
+        return arrowValue.value
+      }
+      switch (arrowValue.value) {
+        case SORT.DEF: {
+          sortArrowsState[id] = SORT.DESC
+          arrowValue.value = SORT.DESC
+          return arrowValue.value
+        }
+        case SORT.DESC: {
+          arrowValue.value = SORT.ASC
+          sortArrowsState[id] = SORT.ASC
+          return arrowValue.value
+        }
+        case SORT.ASC: {
+          arrowValue.value = SORT.DEF
+          sortArrowsState[id] = SORT.DEF
+          return arrowValue.value
+        }
+      }
+    }
+    if (!isInitialSort.length) {
+      getNumberOfSortDirection.value = null
+    }
+
     /* eslint-enable */
+    const rowsPreVariable = ref(props.dataSource)
+    watch(() => props.dataSource, () => {
+      rowsPreVariable.value = props.dataSource
+    })
     const rows = computed(() => {
-      return props.dataSource
+      return rowsPreVariable.value
     })
 
     const showMultiple = computed(() => {
@@ -191,7 +329,7 @@ export default {
       return props.showSelect === 'single' || props.showSelect === 'multiple'
     })
 
-    const rowSelectState = reactive(Object.fromEntries(new Array(props.dataSource.length).fill('l').map((_, idx) => ([idx, false]))))
+    const rowSelectState = makeObjectFromEntries(props.columns, false)
 
     const setRightBorder = (item, idx, array) => {
       if (lastFixedTableValue.value === item.displayValue) {
@@ -222,10 +360,10 @@ export default {
     })
 
     const isTableVisible = computed(() => {
-      return props.dataSource.length && props.columns.length
+      return rowsPreVariable.value.length && props.columns.length
     })
     const rowHover = (rowData, hoverEvent) => {
-      ctx.emit('mouseHover', rowData, hoverEvent)
+      ctx.emit('hoverRow', rowData, hoverEvent)
     }
     const bgStyle = computed(() => {
       return {
@@ -249,23 +387,21 @@ export default {
       if (props.isHeaderSticky) {
         return {
           position: 'sticky',
-          top: 0
+          top: 0,
+          'z-index': 1,
+          background: props.headerColor
         }
       }
-      return {}
-    })
-    onMounted(() => {
-      const table = document.querySelector('.vt-table')
-      if (!table) return
-
-      const applyFixedColumnsHook = mainColumns.value.some(item => item.fixed)
+      return {
+        background: props.headerColor
+      }
     })
 
     const isMarkedAllCheckboxes = ref(false)
     const selectAllCheckboxChanged = (val) => {
       isMarkedAllCheckboxes.value = !val
       if (!val) {
-        ctx.emit('selectResult', [...props.dataSource])
+        ctx.emit('selectResult', [...rowsPreVariable.value])
       }
       for (let key in rowSelectState) rowSelectState[key] = !val
     }
@@ -275,13 +411,30 @@ export default {
       let arr = []
       for (let key in rowSelectState) {
         if (rowSelectState[key]) {
-          arr.push(props.dataSource[key])
+          arr.push(rowsPreVariable.value[key])
         }
       }
       if (arr.length) {
         ctx.emit('selectResult', arr)
       }
     }
+
+    const sortOption = (header, sortVal) => {
+      const { id } = header
+      for (const key in sortArrowsState) sortArrowsState[key] = ''
+      sortArrowsState[id] = sortVal
+      sortObject(header, sortVal)
+    }
+
+    onMounted(() => {
+      const table = document.querySelector('.vt-table')
+      if (!table) return
+
+      const isInitialSort = props.columns.filter((header) => header.initialSort)
+      if (isInitialSort.length) {
+        sortObject(isInitialSort[0], isInitialSort[0].initialSort)
+      }
+    })
 
     return {
       mainColumns,
@@ -297,7 +450,13 @@ export default {
       rowSelectState,
       selectPrticularLine,
       showMultiple,
-      showSingle
+      showSingle,
+      sortOption,
+      sortDown64,
+      loader64,
+      sortUp64,
+      SORT,
+      sortColumn
     }
   }
 }
@@ -391,10 +550,6 @@ $prefix: vt-;
         }
         thead {
           tr {
-            background: #F6F9FB;
-            .#{$prefix}checkbox-cell {
-              border-right: 1px solid #EEF1F2;
-            }
             th {
               font-family: 'Inter';
               font-style: normal;
@@ -402,7 +557,25 @@ $prefix: vt-;
               font-size: 14px;
               line-height: 20px;
               color: #001F2A;
-              background: #F6F9FB;
+              .#{$prefix}header-cell-wrapper {
+                display: flex;
+                .#{$prefix}select-button-block {
+                  user-select: none;
+                  margin-left: 4px;
+                  position: relative;
+                  width: 20px;
+                  height: 20px;
+                  border-radius: 6px;
+                  display: flex;
+                  justify-content: space-around;
+                  align-items: center;
+                  flex-direction: column;
+                  &:hover {
+                    cursor: pointer;
+                    background: #A0B0B9;
+                  }
+                }
+              }
             }
           }
         }
