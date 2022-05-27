@@ -153,31 +153,31 @@ export default {
       type: Array,
       default: () => []
     },
-    isLoading: { // This prop switch off/on loader
+    isLoading: { // switch off/on loader
       type: Boolean,
       default: true
     },
-    isLoaderSoft: { // This prop switch off/on soft loader
+    isLoaderSoft: { // switch off/on soft loader
       type: Boolean,
       default: true
     },
-    isLoaderHard: { // This prop switch off/on hard loader
+    isLoaderHard: { // switch off/on hard loader
       type: Boolean,
       default: false
     },
-    backgroundColor: {
+    backgroundColor: { // applies a custom color to the row on hover
       type: String,
       default: '#E5FDFD'
     },
-    tableHeight: {
+    tableHeight: { // to apply certain heigh for a table
       type: String,
       default: ''
     },
-    isHeaderSticky: {
+    isHeaderSticky: { // makes header sticky
       type: Boolean,
       default: false
     },
-    headerColor: {
+    headerColor: { // applies a custom color to the header
       type: String,
       default: '#F6F9FB'
     },
@@ -190,7 +190,7 @@ export default {
       default: 'default'
     }
   },
-  emits: ['rowClick', 'sortValue', 'mouseHover', 'selectResult'],
+  emits: ['rowClick', 'sortValue', 'hoverRow', 'selectResult'],
   setup (props, ctx) {
     /* eslint-disable */
     const mainColumns = computed(() => {
@@ -339,7 +339,7 @@ export default {
       return props.dataSource.length && props.columns.length
     })
     const rowHover = (rowData, hoverEvent) => {
-      ctx.emit('mouseHover', rowData, hoverEvent)
+      ctx.emit('hoverRow', rowData, hoverEvent)
     }
     const bgStyle = computed(() => {
       return {
@@ -363,10 +363,14 @@ export default {
       if (props.isHeaderSticky) {
         return {
           position: 'sticky',
-          top: 0
+          top: 0,
+          'z-index': 1,
+          background: props.headerColor
         }
       }
-      return {}
+      return {
+        background: props.headerColor
+      }
     })
 
     const isMarkedAllCheckboxes = ref(false)

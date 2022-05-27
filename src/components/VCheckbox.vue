@@ -10,12 +10,14 @@
     <label
       :for="checkboxId"
       class="checkbox-label"
+      :style="labelStyle"
     ></label>
   </div>
 </template>
 
 <script>
 import { computed } from 'vue'
+import { checkboxTick64 } from '../utils/consts'
 
 export default {
   props: {
@@ -36,10 +38,16 @@ export default {
     const onChange = () => {
       context.emit('checkbox-changed', props.checked, props.id)
     }
+    const labelStyle = computed(() => {
+      return {
+        '--span-center': checkboxTick64
+      }
+    })
 
     return {
       onChange,
-      checkboxId
+      checkboxId,
+      labelStyle
     }
   }
 }
@@ -71,7 +79,8 @@ export default {
       display: block;
       width: 10px;
       height: 10px;
-      background: url('../assets/img/check.svg') no-repeat;
+      background-image: var(--span-center);
+      background-repeat: no-repeat;
       background-size: auto;
       background-position: 0 0;
       position: absolute;

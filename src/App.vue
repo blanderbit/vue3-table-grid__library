@@ -8,9 +8,9 @@
       :isLoaderHard ="false"
       :tableHeight ="''"
       :isHeaderSticky ="false"
-      :showSelect ="'multiple'"
+      :showSelect ="'default'"
       @row-click ="indexRow"
-      @mouse-hover ="showHoverCellData"
+      @hover-row ="showHoverCellData"
       @sort-value = "sortColumn"
       @select-result ="showSelected"
     >
@@ -47,20 +47,16 @@ import { SORT } from './utils/consts'
 const columns = reactive([
   {
     displayName: 'Dessert (100g serving)',
-    displayValue: 'name',
-    sortable: true,
-    sortArrowBackground: '#f0f',
-    isShownSortableWindow: true
+    displayValue: 'name'
   },
   {
     displayName: 'Calories',
     displayValue: 'calories',
-    sortable: true
+    width: '300'
   },
   {
     displayName: 'Fat (g)',
     displayValue: 'fat',
-    sortable: true
   },
   {
     displayName: 'Carbs (g)',
